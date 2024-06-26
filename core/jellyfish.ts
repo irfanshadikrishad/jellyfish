@@ -8,6 +8,7 @@ class Jellyfish {
   /**
    * Inserts single Anime by Anilist ID.
    * @param {string} anilistId - Anilist ID.
+   * @returns {Promise<any>} The result of the save operation or error.
    */
   static async singleInsertById(anilistId: string): Promise<any> {
     const isAlreadyAdded = await Anime.findOne({ anilistId });
@@ -53,12 +54,22 @@ class Jellyfish {
           recommendModified.push(insertRec);
         });
 
+        // Fetching episodes asynchronously
+        let unicorn_Episodes: any[] = [];
+        if (episodes) {
+          unicorn_Episodes = await Promise.all(
+            episodes.map(async (epes, index) => {
+              return await anilist.fetchEpisodeSources(epes.id);
+            })
+          );
+        }
+
         const anime = new Anime({
           anilistId: id,
           malId: malId,
           title: title,
           description: description,
-          //   episodes: episodes,
+          episodes: unicorn_Episodes,
           poster: image,
           cover: cover,
           origin: countryOfOrigin,
@@ -83,7 +94,7 @@ class Jellyfish {
           console.log(chalk.magenta(`[singleInsertById] save error`));
         }
       } catch (error) {
-        return error;
+        console.log(chalk.magenta(error));
       }
     } else {
       console.log(

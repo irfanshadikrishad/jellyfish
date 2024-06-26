@@ -16,13 +16,7 @@ const animeSchema = new Schema(
     description: String,
     poster: String,
     cover: String,
-    episodes: [
-      {
-        number: { type: Number },
-        title: { type: String },
-        url: { type: String, required: true },
-      },
-    ],
+    episodes: [{}],
     origin: String,
     format: String,
     duration: String,
