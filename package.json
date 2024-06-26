@@ -1,0 +1,17 @@
+{
+  "name": "jellyfish",
+  "module": "index.ts",
+  "type": "module",
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@consumet/extensions": "github:consumet/consumet.ts",
+    "chalk": "^5.3.0",
+    "dotenv": "^16.4.5",
+    "mongoose": "^8.4.4"
+  }
+}
