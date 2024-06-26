@@ -4,9 +4,9 @@ import chalk from "chalk";
 
 database();
 
-Jellyfish.singleInsertById("98659")
+Jellyfish.singleInsertById("131930")
   .then((data) => {
-    if (data._id) {
+    if (data && data._id) {
       console.log(
         chalk.green(
           `[singleInsertById] ${data.anilistId} ${data._id} ${

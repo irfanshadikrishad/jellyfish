@@ -1,8 +1,9 @@
-import { META } from "@consumet/extensions";
+import { META, ANIME } from "@consumet/extensions";
 import chalk from "chalk";
 import Anime from "../schema/anime";
 
 const anilist = new META.Anilist();
+const gogoanime = new ANIME.Gogoanime();
 
 class Jellyfish {
   /**
@@ -13,7 +14,7 @@ class Jellyfish {
   static async singleInsertById(anilistId: string): Promise<any> {
     const isAlreadyAdded = await Anime.findOne({ anilistId });
     if (anilistId && !isAlreadyAdded) {
-      console.log(chalk.gray(`[singleInsertById] running`));
+      console.log(chalk.gray(`[singleInsertById] ${anilistId} initiated...`));
       try {
         const {
           title,
@@ -36,8 +37,9 @@ class Jellyfish {
           nextAiringEpisode,
           studios,
           recommendations,
-        } = await anilist.fetchAnimeInfo(anilistId);
+        } = await anilist.fetchAnimeInfo(anilistId, false);
 
+        // MODIFY RECOMMENDATION AND STORE
         const recommendModified: any[] = [];
         recommendations?.map((r) => {
           let insertRec = {
@@ -53,23 +55,95 @@ class Jellyfish {
           };
           recommendModified.push(insertRec);
         });
+        console.log(
+          chalk.green(`[recommendation] ${recommendModified.length}`)
+        );
 
-        // Fetching episodes asynchronously
-        let unicorn_Episodes: any[] = [];
-        if (episodes) {
-          unicorn_Episodes = await Promise.all(
-            episodes.map(async (epes, index) => {
-              return await anilist.fetchEpisodeSources(epes.id);
-            })
-          );
+        // GET GOGOID > GOGO_EPISODES > GOGO_EPISODE_SOURCES
+        let gogo_subId: string | undefined = episodes?.[0]?.id
+          ? String(episodes[0].id).split("-").slice(0, -2).join("-")
+          : undefined;
+        // If dub is included, remove it for sub
+        if (gogo_subId && gogo_subId.includes("-dub")) {
+          gogo_subId = gogo_subId.split("-dub").slice(0, -1).join("");
+        }
+        const gogo_dubId: string = gogo_subId + "-dub";
+        console.log(chalk.gray(`[subId] : ${gogo_subId}`));
+        console.log(chalk.gray(`[dubId] : ${gogo_dubId}`));
+        // STORAGE
+        let sub_episodes: any[] = [];
+        let dub_episodes: any[] = [];
+
+        // GET SUB EPISODES
+        if (gogo_subId) {
+          try {
+            const gogo_Info = await gogoanime.fetchAnimeInfo(gogo_subId);
+            const gogo_subEpisodes = gogo_Info?.episodes;
+
+            // Get episode sources with error handling
+            if (gogo_subEpisodes) {
+              sub_episodes = await Promise.all(
+                gogo_subEpisodes.map(async (epes, index) => {
+                  console.log(chalk.gray(`[sub] eps id: ${epes.id}`));
+                  try {
+                    return await anilist.fetchEpisodeSources(epes.id);
+                  } catch (error) {
+                    console.log(
+                      chalk.magenta(
+                        `[sub] Episode source fetch error for episode ${epes.id}: ${error}`
+                      )
+                    );
+                    // Return an empty array or a placeholder value to indicate an error
+                    return []; // Or any placeholder value suitable for your logic
+                  }
+                })
+              );
+            }
+          } catch (error) {
+            console.log(chalk.magenta(`[sub] General error: ${error}`));
+          }
+        }
+        console.log(chalk.green(`[sub] ${sub_episodes.length}`));
+
+        try {
+          // GET DUB EPISODES
+          if (gogo_dubId) {
+            const gogo_Info = await gogoanime.fetchAnimeInfo(gogo_dubId);
+            const gogo_dubEpisodes = gogo_Info?.episodes;
+
+            // Get episode sources with error handling
+            if (gogo_Info && gogo_dubEpisodes) {
+              dub_episodes = await Promise.all(
+                gogo_dubEpisodes.map(async (epes, index) => {
+                  console.log(chalk.gray(`[dub] eps id: ${epes.id}`));
+                  try {
+                    return await anilist.fetchEpisodeSources(epes.id);
+                  } catch (error) {
+                    console.log(
+                      chalk.magenta(
+                        `[dub] Episode source fetch error for episode ${epes.id}: ${error}`
+                      )
+                    );
+                    // Return an empty array or a placeholder value to indicate an error
+                    return []; // Or any placeholder value suitable for your logic
+                  }
+                })
+              );
+            }
+          }
+          console.log(chalk.green(`[dub] ${dub_episodes.length}`));
+        } catch (error) {
+          console.log(chalk.magenta(`[dub] General error: ${error}`));
         }
 
+        // SAVE ANIME DETAILS TO THE DATABASE
         const anime = new Anime({
           anilistId: id,
           malId: malId,
           title: title,
           description: description,
-          episodes: unicorn_Episodes,
+          sub_episodes: sub_episodes,
+          dub_episodes: dub_episodes,
           poster: image,
           cover: cover,
           origin: countryOfOrigin,
