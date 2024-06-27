@@ -100,7 +100,7 @@ class Jellyfish {
               );
             }
           } catch (error) {
-            console.log(chalk.magenta(`[sub] General error: ${error}`));
+            console.log(chalk.magenta(`[sub] not found`));
           }
         }
         console.log(chalk.green(`[sub] ${sub_episodes.length}`));
@@ -133,7 +133,7 @@ class Jellyfish {
           }
           console.log(chalk.green(`[dub] ${dub_episodes.length}`));
         } catch (error) {
-          console.log(chalk.magenta(`[dub] General error: ${error}`));
+          console.log(chalk.magenta(`[dub] not found`));
         }
 
         // SAVE ANIME DETAILS TO THE DATABASE
@@ -168,7 +168,7 @@ class Jellyfish {
           console.log(chalk.magenta(`[singleInsertById] save error`));
         }
       } catch (error) {
-        console.log(chalk.magenta(error));
+        console.log(chalk.magenta(`[singleInsertById] ${anilistId} not found`));
       }
     } else {
       console.log(
@@ -176,6 +176,46 @@ class Jellyfish {
           `anilistId: ${anilistId}, already exists: ${Boolean(isAlreadyAdded)}`
         )
       );
+    }
+  }
+
+  /**
+   * returns anilist access token
+   * @param {number} start - to start from
+   * @param {number} end - to end from
+   * @returns {Promise<any>} access token
+   *  */
+  static async insertBasedOnRange(start: number, end: number): Promise<any> {
+    let added = [];
+    for (let index = start; index <= end; index++) {
+      try {
+        console.log(chalk.gray(`[insertBasedOnRange] getting ${index}`));
+        const check = await this.singleInsertById(String(index));
+        if (check && check._id) {
+          added.push(check.anilistId);
+        }
+      } catch (error) {
+        console.log(chalk.magenta(`[insertBasedOnRange] ${error}`));
+      }
+    }
+    return added;
+  }
+
+  /**
+   * returns if deleted or not
+   * @param {number} anilistId
+   * @returns {any}
+   */
+  static async deleteByAnilistId(anilistId: number): Promise<any> {
+    try {
+      const del = await Anime.deleteOne({ anilistId });
+      if (del) {
+        return del;
+      } else {
+        console.log(del);
+      }
+    } catch (error) {
+      new Error(`[deleteByAnilistId] ${error}`);
     }
   }
 }
