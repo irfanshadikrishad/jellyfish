@@ -5,6 +5,12 @@ import Anime from "../schema/anime";
 const anilist = new META.Anilist();
 const gogoanime = new ANIME.Gogoanime();
 
+import {
+  colorize_error,
+  colorize_info,
+  colorize_success,
+} from "../utils/colorize";
+
 class Jellyfish {
   /**
    * Inserts single Anime by Anilist ID.
@@ -14,7 +20,7 @@ class Jellyfish {
   static async singleInsertById(anilistId: string): Promise<any> {
     const isAlreadyAdded = await Anime.findOne({ anilistId });
     if (anilistId && !isAlreadyAdded) {
-      console.log(chalk.gray(`[singleInsertById] ${anilistId} initiated...`));
+      colorize_info(`[singleInsertById] ${anilistId} initiated...`);
       try {
         const {
           title,
@@ -55,9 +61,7 @@ class Jellyfish {
           };
           recommendModified.push(insertRec);
         });
-        console.log(
-          chalk.green(`[recommendation] ${recommendModified.length}`)
-        );
+        colorize_success(`[recommendation] ${recommendModified.length}`);
 
         // GET GOGOID > GOGO_EPISODES > GOGO_EPISODE_SOURCES
         let gogo_subId: string | undefined = episodes?.[0]?.id
@@ -68,8 +72,8 @@ class Jellyfish {
           gogo_subId = gogo_subId.split("-dub").slice(0, -1).join("");
         }
         const gogo_dubId: string = gogo_subId + "-dub";
-        console.log(chalk.gray(`[subId] : ${gogo_subId}`));
-        console.log(chalk.gray(`[dubId] : ${gogo_dubId}`));
+        colorize_info(`[subId] : ${gogo_subId}`);
+        colorize_info(`[dubId] : ${gogo_dubId}`);
         // STORAGE
         let sub_episodes: any[] = [];
         let dub_episodes: any[] = [];
@@ -84,15 +88,18 @@ class Jellyfish {
             if (gogo_subEpisodes) {
               sub_episodes = await Promise.all(
                 gogo_subEpisodes.map(async (epes, index) => {
-                  console.log(chalk.gray(`[sub] eps id: ${epes.id}`));
+                  colorize_info(`[sub] [${anilistId}] ${epes.id}`);
                   try {
-                    return await anilist.fetchEpisodeSources(epes.id);
+                    const sources = await anilist.fetchEpisodeSources(epes.id);
+                    const episode_information = {
+                      id: epes.id,
+                      number: epes.number,
+                      title: epes.title ? epes.title : null,
+                      sources: sources,
+                    };
+                    return episode_information;
                   } catch (error) {
-                    console.log(
-                      chalk.magenta(
-                        `[sub] Episode source fetch error for episode ${epes.id}: ${error}`
-                      )
-                    );
+                    colorize_error(`[sub]  ${epes.id}: ${error}`);
                     // Return an empty array or a placeholder value to indicate an error
                     return []; // Or any placeholder value suitable for your logic
                   }
@@ -100,10 +107,10 @@ class Jellyfish {
               );
             }
           } catch (error) {
-            console.log(chalk.magenta(`[sub] not found`));
+            colorize_error(`[sub] not found`);
           }
         }
-        console.log(chalk.green(`[sub] ${sub_episodes.length}`));
+        colorize_success(`[sub] ${sub_episodes.length}`);
 
         try {
           // GET DUB EPISODES
@@ -115,15 +122,18 @@ class Jellyfish {
             if (gogo_Info && gogo_dubEpisodes) {
               dub_episodes = await Promise.all(
                 gogo_dubEpisodes.map(async (epes, index) => {
-                  console.log(chalk.gray(`[dub] eps id: ${epes.id}`));
+                  colorize_info(`[dub] [${anilistId}] ${epes.id}`);
                   try {
-                    return await anilist.fetchEpisodeSources(epes.id);
+                    const sources = await anilist.fetchEpisodeSources(epes.id);
+                    const episode_information = {
+                      id: epes.id,
+                      number: epes.number,
+                      title: epes.title ? epes.title : null,
+                      sources: sources,
+                    };
+                    return episode_information;
                   } catch (error) {
-                    console.log(
-                      chalk.magenta(
-                        `[dub] Episode source fetch error for episode ${epes.id}: ${error}`
-                      )
-                    );
+                    console.log(chalk.magenta(`[dub] ${epes.id}: ${error}`));
                     // Return an empty array or a placeholder value to indicate an error
                     return []; // Or any placeholder value suitable for your logic
                   }
@@ -131,9 +141,9 @@ class Jellyfish {
               );
             }
           }
-          console.log(chalk.green(`[dub] ${dub_episodes.length}`));
+          colorize_success(`[dub] ${dub_episodes.length}`);
         } catch (error) {
-          console.log(chalk.magenta(`[dub] not found`));
+          colorize_error(`[dub] not found`);
         }
 
         // SAVE ANIME DETAILS TO THE DATABASE
@@ -165,16 +175,14 @@ class Jellyfish {
         if (saved_Anime) {
           return saved_Anime;
         } else {
-          console.log(chalk.magenta(`[singleInsertById] save error`));
+          colorize_error(`[singleInsertById] save error`);
         }
       } catch (error) {
-        console.log(chalk.magenta(`[singleInsertById] ${anilistId} not found`));
+        colorize_error(`[singleInsertById] ${anilistId} not found`);
       }
     } else {
-      console.log(
-        chalk.green(
-          `anilistId: ${anilistId}, already exists: ${Boolean(isAlreadyAdded)}`
-        )
+      colorize_success(
+        `anilistId: ${anilistId}, already exists: ${Boolean(isAlreadyAdded)}`
       );
     }
   }
@@ -183,19 +191,19 @@ class Jellyfish {
    * returns anilist access token
    * @param {number} start - to start from
    * @param {number} end - to end from
-   * @returns {Promise<any>} access token
+   * @returns {any[]} array of added anilistId
    *  */
   static async insertBasedOnRange(start: number, end: number): Promise<any> {
     let added = [];
     for (let index = start; index <= end; index++) {
       try {
-        console.log(chalk.gray(`[insertBasedOnRange] getting ${index}`));
+        colorize_info(`[insertBasedOnRange] getting ${index}`);
         const check = await this.singleInsertById(String(index));
         if (check && check._id) {
           added.push(check.anilistId);
         }
       } catch (error) {
-        console.log(chalk.magenta(`[insertBasedOnRange] ${error}`));
+        colorize_error(`[insertBasedOnRange] ${error}`);
       }
     }
     return added;
@@ -210,12 +218,189 @@ class Jellyfish {
     try {
       const del = await Anime.deleteOne({ anilistId });
       if (del) {
-        return del;
+        return del.acknowledged;
       } else {
-        console.log(del);
+        colorize_error(del);
       }
     } catch (error) {
       new Error(`[deleteByAnilistId] ${error}`);
+    }
+  }
+
+  /**
+   * Update All Ongoing Animes
+   * @returns {number} total updated count
+   * Dub may not be updated on last few episodes if after status changes to completed after sub release
+   */
+  static async updateAllOngoing(): Promise<number> {
+    try {
+      // STEP-1: Finding out the animes that are ongoing
+      const ongoing = await Anime.find({ status: "Ongoing" });
+      colorize_info(`[updateAllOngoing] ${ongoing.length} found`);
+
+      let updatedCount = 0; // Counter to track the number of updates
+
+      // Traverse over it to access all individually
+      const updatePromises = ongoing.map(async (ong_ing) => {
+        try {
+          let animeUpdated = false; // Flag to check if the anime was updated
+
+          // AnilistId can be accessed from here now,
+          // lets get the subId from first episodeId
+          let gogo_subId: string | undefined = ong_ing.sub_episodes?.[0]?.id
+            ? String(ong_ing.sub_episodes[0].id)
+                .split("-")
+                .slice(0, -2)
+                .join("-")
+            : undefined;
+
+          // If dub is included, remove it for sub
+          if (gogo_subId && gogo_subId.includes("-dub")) {
+            gogo_subId = gogo_subId.split("-dub").slice(0, -1).join("");
+          }
+          const gogo_dubId: string = gogo_subId + "-dub";
+          colorize_info(`[subId] : ${gogo_subId}`);
+          colorize_info(`[dubId] : ${gogo_dubId}`);
+
+          // Now that we got subId, dubId let fetch their episodes from gogoanime
+          if (gogo_subId && gogo_dubId) {
+            const gogoSubInfo = await gogoanime.fetchAnimeInfo(gogo_subId);
+            const gogoDubInfo = await gogoanime.fetchAnimeInfo(gogo_dubId);
+            // Storing episodes inside variables
+            const gogoSubEpisodes = gogoSubInfo.episodes;
+            const gogoDubEpisodes = gogoDubInfo.episodes;
+            // These are the already added episodes
+            const alreadyAddedSubEpisodes = ong_ing.sub_episodes;
+            const alreadyAddedDubEpisodes = ong_ing.dub_episodes;
+
+            if (gogoSubEpisodes) {
+              const isSubSame =
+                gogoSubEpisodes.length === alreadyAddedSubEpisodes.length;
+              const isDubSame =
+                gogoDubEpisodes?.length === alreadyAddedDubEpisodes.length;
+
+              // If the lengths are the same means no recent updates
+              if (!isSubSame) {
+                const updatedGogoSubEpisodes = await Promise.all(
+                  gogoSubEpisodes.map(async (g_e) => {
+                    try {
+                      const sources = await gogoanime.fetchEpisodeSources(
+                        g_e.id
+                      );
+                      const episode_information = {
+                        id: g_e.id,
+                        number: g_e.number,
+                        title: g_e.title ? g_e.title : null,
+                        sources: sources,
+                      };
+                      return episode_information;
+                    } catch (error) {
+                      colorize_error(
+                        `[updateAllOngoing] Error fetching sub episode sources for ${g_e.id}: ${error}`
+                      );
+                      return null;
+                    }
+                  })
+                );
+
+                // After getting new episodes, let's update to the database
+                if (updatedGogoSubEpisodes) {
+                  colorize_info(
+                    `${ong_ing.anilistId} have : ${alreadyAddedSubEpisodes.length} found : ${updatedGogoSubEpisodes.length}`
+                  );
+                  const storin = await Anime.findByIdAndUpdate(
+                    {
+                      _id: ong_ing._id,
+                    },
+                    { sub_episodes: updatedGogoSubEpisodes },
+                    { new: true }
+                  );
+                  if (storin) {
+                    colorize_success(
+                      `[updateAllOngoing] ${storin.anilistId} ${storin._id} sub updated`
+                    );
+                    animeUpdated = true; // Mark as updated
+                  } else {
+                    colorize_error(
+                      `[updateAllOngoing] something wrong. ${storin}`
+                    );
+                  }
+                }
+              } else {
+                colorize_info(`[sub] up-to-date`);
+              }
+
+              // Now let's check on the dub anime's
+              if (!isDubSame && gogoDubEpisodes) {
+                const updatedGogoDubEpisodes = await Promise.all(
+                  gogoDubEpisodes.map(async (g_e) => {
+                    try {
+                      const sources = await gogoanime.fetchEpisodeSources(
+                        g_e.id
+                      );
+                      const episode_information = {
+                        id: g_e.id,
+                        number: g_e.number,
+                        title: g_e.title ? g_e.title : null,
+                        sources: sources,
+                      };
+                      return episode_information;
+                    } catch (error) {
+                      colorize_error(
+                        `[updateAllOngoing] Error fetching dub episode sources for ${g_e.id}: ${error}`
+                      );
+                      return null;
+                    }
+                  })
+                );
+
+                // After getting new episodes, let's update to the database
+                if (updatedGogoDubEpisodes) {
+                  colorize_info(
+                    `${ong_ing.anilistId} have : ${alreadyAddedDubEpisodes.length} found : ${updatedGogoDubEpisodes.length}`
+                  );
+                  const storin = await Anime.findByIdAndUpdate(
+                    {
+                      _id: ong_ing._id,
+                    },
+                    { dub_episodes: updatedGogoDubEpisodes },
+                    { new: true }
+                  );
+                  if (storin) {
+                    colorize_success(
+                      `[updateAllOngoing] ${storin.anilistId} ${storin._id} dub updated`
+                    );
+                    animeUpdated = true; // Mark as updated
+                  } else {
+                    colorize_error(
+                      `[updateAllOngoing] something wrong. ${storin}`
+                    );
+                  }
+                }
+              } else {
+                colorize_info(`[dub] up-to-date`);
+              }
+            }
+          }
+
+          if (animeUpdated) {
+            updatedCount++; // Increment the counter if the anime was updated
+          }
+        } catch (error) {
+          colorize_error(
+            `[updateAllOngoing] Error processing anime with AniList ID ${ong_ing.anilistId}: ${error}`
+          );
+        }
+      });
+
+      await Promise.all(updatePromises); // Wait for all updates to complete
+
+      return updatedCount; // Return the number of updated animes
+    } catch (error) {
+      colorize_error(
+        `[updateAllOngoing] Error fetching ongoing animes: ${error}`
+      );
+      return 0; // Return 0 in case of error
     }
   }
 }
