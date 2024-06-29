@@ -24,18 +24,16 @@ database();
 //     colorize_error(error);
 //   });
 
-// Jellyfish.singleInsertById("170890")
+// Jellyfish.singleInsertById("52")
 //   .then((data) => {
-//     console.log(
-//       chalk.green(
-//         `[singleInsertById] ${data._id} ${
-//           data.title.english && data.title.english
-//         }`
-//       )
+//     colorize_success(
+//       `[singleInsertById] ${data._id} ${
+//         data.title.english && data.title.english
+//       }`
 //     );
 //   })
 //   .catch((error) => {
-//     console.log(error);
+//     colorize_error(error);
 //   });
 
 // Jellyfish.deleteByAnilistId(153288)

@@ -10,6 +10,7 @@ import {
   colorize_info,
   colorize_success,
 } from "../utils/colorize";
+import { replaceMultipleHyphens } from "../utils/workers";
 
 class Jellyfish {
   /**
@@ -71,7 +72,7 @@ class Jellyfish {
         if (gogo_subId && gogo_subId.includes("-dub")) {
           gogo_subId = gogo_subId.split("-dub").slice(0, -1).join("");
         }
-        const gogo_dubId: string = gogo_subId + "-dub";
+        const gogo_dubId: string = replaceMultipleHyphens(`${gogo_subId}-dub`);
         colorize_info(`[subId] : ${gogo_subId}`);
         colorize_info(`[dubId] : ${gogo_dubId}`);
         // STORAGE
