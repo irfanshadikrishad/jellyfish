@@ -8,6 +8,14 @@ import {
 
 database();
 
+// Jellyfish.updateDubEpisodesById("21")
+//   .then((data) => {
+//     colorize_info(`${data}`);
+//   })
+//   .catch((error) => {
+//     colorize_error(error);
+//   });
+
 // Jellyfish.updateAllOngoing()
 //   .then((count) => {
 //     colorize_success(`[updateAllOngoing] ${count} updated`);
@@ -15,6 +23,7 @@ database();
 //   .catch((error) => {
 //     colorize_error(error);
 //   });
+
 // Jellyfish.singleInsertById("170890")
 //   .then((data) => {
 //     console.log(
@@ -28,6 +37,7 @@ database();
 //   .catch((error) => {
 //     console.log(error);
 //   });
+
 // Jellyfish.deleteByAnilistId(153288)
 //   .then((data) => {
 //     console.log(data);
@@ -35,7 +45,8 @@ database();
 //   .catch((error) => {
 //     colorize_error(error);
 //   });
-Jellyfish.insertBasedOnRange(0, 10)
+
+Jellyfish.insertBasedOnRange(50, 100)
   .then((data) => {
     colorize_success(`[insertBasedOnRange] ${data}`);
   })

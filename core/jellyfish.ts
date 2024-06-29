@@ -206,7 +206,11 @@ class Jellyfish {
         colorize_error(`[insertBasedOnRange] ${error}`);
       }
     }
-    return added;
+    if (added.length > 0) {
+      return added;
+    } else {
+      return `0 added`;
+    }
   }
 
   /**
@@ -378,7 +382,7 @@ class Jellyfish {
                   }
                 }
               } else {
-                colorize_info(`[dub] up-to-date`);
+                colorize_info(`[dub] ${ong_ing.anilistId} up-to-date`);
               }
             }
           }
@@ -401,6 +405,65 @@ class Jellyfish {
         `[updateAllOngoing] Error fetching ongoing animes: ${error}`
       );
       return 0; // Return 0 in case of error
+    }
+  }
+
+  /**
+   * @param {string} anilistId
+   * @returns {string} update information
+   */
+  static async updateDubEpisodesById(
+    anilistId: string
+  ): Promise<string | undefined> {
+    try {
+      // Lets give an info about work
+      colorize_info(
+        `[updateDubEpisodesById] initiating operation on (${anilistId})`
+      );
+      // First of all let's check if the anime by this anilist id is in our database or not
+      const isExist = await Anime.findOne({ anilistId });
+      if (isExist) {
+        // Now that we know it exists we have to get the dub episodes from gogoanime
+        // But we dont know have dub id, so lets get the sub id and change to dub
+        const gogoSubId = isExist.sub_episodes[0]?.id;
+        const gogoDubId = `${String(gogoSubId)
+          .split("-")
+          .slice(0, -2)
+          .join("-")}-dub`;
+        const dubloon = await gogoanime.fetchAnimeInfo(gogoDubId);
+        // Lets check if the request is successful, and episodes exists for corresponding anime
+        if (dubloon && dubloon.episodes) {
+          const alreadyHaveEpisodes = isExist.dub_episodes;
+          const newEpisodesFromGogo = dubloon.episodes;
+          // lets check if the episodes count the same, if not, update it
+          if (alreadyHaveEpisodes.length < newEpisodesFromGogo.length) {
+            // update
+            const update = await Anime.findByIdAndUpdate(
+              { _id: isExist._id },
+              { dub_episodes: newEpisodesFromGogo },
+              { new: true }
+            );
+            if (update) {
+              return `[${isExist.anilistId}] +${
+                newEpisodesFromGogo.length - alreadyHaveEpisodes.length
+              } episodes`;
+            }
+          } else {
+            return `[${anilistId}] already up-to-date`;
+          }
+        } else {
+          return `[${anilistId}] no dub found for ${
+            isExist.title?.english
+              ? isExist?.title?.english
+              : isExist?.title?.romaji
+          }`;
+        }
+      } else {
+        return `[${anilistId}] does not exist in database`;
+      }
+    } catch (error) {
+      colorize_error(`${error}`);
+      new Error(`error from updateDubEpisodesById`);
     }
   }
 }
