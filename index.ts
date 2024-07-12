@@ -8,7 +8,7 @@ import {
 
 database();
 
-// Jellyfish.updateDubEpisodesById("21")
+// Jellyfish.updateDubEpisodesById("20")
 //   .then((data) => {
 //     colorize_info(`${data}`);
 //   })
@@ -44,9 +44,17 @@ database();
 //     colorize_error(error);
 //   });
 
-Jellyfish.insertBasedOnRange(50, 100)
+// Jellyfish.insertBasedOnRange(50, 100)
+//   .then((data) => {
+//     colorize_success(`[insertBasedOnRange] ${data}`);
+//   })
+//   .catch((error) => {
+//     colorize_error(error);
+//   });
+
+Jellyfish.insertAllAnimes()
   .then((data) => {
-    colorize_success(`[insertBasedOnRange] ${data}`);
+    colorize_success(data);
   })
   .catch((error) => {
     colorize_error(error);

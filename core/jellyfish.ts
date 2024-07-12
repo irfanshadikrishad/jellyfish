@@ -1,6 +1,7 @@
 import { META, ANIME } from "@consumet/extensions";
 import chalk from "chalk";
 import Anime from "../schema/anime";
+import fetch from "node-fetch";
 
 const anilist = new META.Anilist();
 const gogoanime = new ANIME.Gogoanime();
@@ -465,6 +466,89 @@ class Jellyfish {
     } catch (error) {
       colorize_error(`${error}`);
       new Error(`error from updateDubEpisodesById`);
+    }
+  }
+
+  /**
+   * Insert all animes
+   * @returns {any}
+   */
+  static async insertAllAnimes(): Promise<any> {
+    let loop = true;
+    let request_Count = 0;
+    const url = "https://graphql.anilist.co";
+    const query = `
+      query ($page: Int, $perPage: Int) {
+        Page(page: $page, perPage: $perPage) {
+          pageInfo {
+            total
+            currentPage
+            lastPage
+            hasNextPage
+            perPage
+          }
+          media(type: ANIME) {
+            id
+          }
+        }
+      }
+    `;
+    let variables = { page: 1, perPage: 50 };
+
+    while (loop) {
+      const request = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({
+          query: query,
+          variables: variables,
+        }),
+      });
+
+      const response = (await request.json()) as {
+        data?: {
+          Page: {
+            pageInfo: {
+              hasNextPage: boolean;
+            };
+            media: {
+              id: number;
+            }[];
+          };
+        };
+        errors?: any[];
+      };
+
+      if (response.errors) {
+        console.error("Error in response:", response.errors);
+        break;
+      } else {
+        // Main area after getting the id, do whatever!
+        response?.data?.Page?.media.map((anime) => {
+          colorize_info(`${String(anime?.id)}, ${request_Count}`);
+          // Add to the database
+          this.singleInsertById(String(anime.id));
+        });
+
+        request_Count++;
+        // Counter to bypass rate-limit
+        if (request_Count >= 5) {
+          colorize_info(`Interval initiated, reached ${5} requests...`);
+          await new Promise((resolve) => setTimeout(resolve, 60000)); // Wait for interval delay
+          request_Count = 0; // Reset request count after interval
+          colorize_info(`Interval reseted...`);
+        }
+        // increase page count
+        if (response.data?.Page.pageInfo.hasNextPage) {
+          variables.page += 1;
+        } else {
+          loop = false;
+          return `[] inserted successfully.`;
+        }
+      }
     }
   }
 }
