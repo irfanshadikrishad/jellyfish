@@ -22,7 +22,7 @@ class Jellyfish {
   static async singleInsertById(anilistId: string): Promise<any> {
     const isAlreadyAdded = await Anime.findOne({ anilistId });
     if (anilistId && !isAlreadyAdded) {
-      colorize_info(`[singleInsertById] ${anilistId} initiated...`);
+      colorize_info(`[${anilistId}] initiated...`);
       try {
         const {
           title,
@@ -49,7 +49,7 @@ class Jellyfish {
 
         // MODIFY RECOMMENDATION AND STORE
         const recommendModified: any[] = [];
-        recommendations?.map((r) => {
+        recommendations?.forEach((r) => {
           let insertRec = {
             animeId: r.id,
             malId: r.malId,
@@ -63,7 +63,9 @@ class Jellyfish {
           };
           recommendModified.push(insertRec);
         });
-        colorize_success(`[recommendation] ${recommendModified.length}`);
+        colorize_success(
+          `[recommendation] [${anilistId}] ${recommendModified.length}`
+        );
 
         // GET GOGOID > GOGO_EPISODES > GOGO_EPISODE_SOURCES
         let gogo_subId: string | undefined = episodes?.[0]?.id
@@ -101,9 +103,15 @@ class Jellyfish {
                     };
                     return episode_information;
                   } catch (error) {
-                    colorize_error(`[sub]  ${epes.id}: ${error}`);
-                    // Return an empty array or a placeholder value to indicate an error
-                    return []; // Or any placeholder value suitable for your logic
+                    colorize_error(`[sub] ${epes.id}: ${error}`);
+                    // Return an object indicating an error
+                    return {
+                      id: epes.id,
+                      number: epes.number,
+                      title: epes.title ? epes.title : null,
+                      sources: [],
+                      error: true,
+                    };
                   }
                 })
               );
@@ -112,7 +120,7 @@ class Jellyfish {
             colorize_error(`[sub] not found`);
           }
         }
-        colorize_success(`[sub] ${sub_episodes.length}`);
+        colorize_success(`[sub] [${anilistId}] ${sub_episodes.length}`);
 
         try {
           // GET DUB EPISODES
@@ -135,15 +143,21 @@ class Jellyfish {
                     };
                     return episode_information;
                   } catch (error) {
-                    console.log(chalk.magenta(`[dub] ${epes.id}: ${error}`));
-                    // Return an empty array or a placeholder value to indicate an error
-                    return []; // Or any placeholder value suitable for your logic
+                    colorize_error(`[dub] ${epes.id}: ${error}`);
+                    // Return an object indicating an error
+                    return {
+                      id: epes.id,
+                      number: epes.number,
+                      title: epes.title ? epes.title : null,
+                      sources: [],
+                      error: true,
+                    };
                   }
                 })
               );
             }
           }
-          colorize_success(`[dub] ${dub_episodes.length}`);
+          colorize_success(`[dub] [${anilistId}] ${dub_episodes.length}`);
         } catch (error) {
           colorize_error(`[dub] not found`);
         }
@@ -175,6 +189,9 @@ class Jellyfish {
 
         const saved_Anime = await anime.save();
         if (saved_Anime) {
+          colorize_success(
+            `[${saved_Anime?.title?.english}] [${saved_Anime.anilistId}] inserted.`
+          );
           return saved_Anime;
         } else {
           colorize_error(`[singleInsertById] save error`);
@@ -184,8 +201,9 @@ class Jellyfish {
       }
     } else {
       colorize_success(
-        `anilistId: ${anilistId}, already exists: ${Boolean(isAlreadyAdded)}`
+        `[${isAlreadyAdded?.title?.english}] [${isAlreadyAdded?.anilistId}] [${isAlreadyAdded?._id}] already added.`
       );
+      return `[${isAlreadyAdded?.title?.english}] already added.`;
     }
   }
 
@@ -493,7 +511,7 @@ class Jellyfish {
         }
       }
     `;
-    let variables = { page: 1, perPage: 50 };
+    let variables = { page: 352, perPage: 1 };
 
     while (loop) {
       const request = await fetch(url, {
@@ -526,27 +544,39 @@ class Jellyfish {
         console.error("Error in response:", response.errors);
         break;
       } else {
-        // Main area after getting the id, do whatever!
-        response?.data?.Page?.media.map((anime) => {
-          colorize_info(`${String(anime?.id)}, ${request_Count}`);
-          // Add to the database
-          this.singleInsertById(String(anime.id));
-        });
+        for (const anime of response?.data?.Page?.media || []) {
+          try {
+            // colorize_info(`${String(anime?.id)}, ${request_Count}`);
+            await this.singleInsertById(String(anime.id));
+
+            if (response.data?.Page.pageInfo.hasNextPage) {
+              variables.page += 1;
+            } else {
+              loop = false;
+              return `[] inserted successfully.`;
+            }
+          } catch (error) {
+            colorize_error(String(error));
+            if (response.data?.Page.pageInfo.hasNextPage) {
+              variables.page += 1;
+            } else {
+              loop = false;
+              return `[] inserted successfully.`;
+            }
+          }
+        }
 
         request_Count++;
         // Counter to bypass rate-limit
-        if (request_Count >= 5) {
-          colorize_info(`Interval initiated, reached ${5} requests...`);
+        if (request_Count >= 1) {
+          colorize_info(
+            `Interval initiated, page ${
+              variables.page
+            }, reached ${1} requests...`
+          );
           await new Promise((resolve) => setTimeout(resolve, 60000)); // Wait for interval delay
           request_Count = 0; // Reset request count after interval
-          colorize_info(`Interval reseted...`);
-        }
-        // increase page count
-        if (response.data?.Page.pageInfo.hasNextPage) {
-          variables.page += 1;
-        } else {
-          loop = false;
-          return `[] inserted successfully.`;
+          colorize_info(`Interval reset...`);
         }
       }
     }

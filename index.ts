@@ -8,7 +8,7 @@ import {
 
 database();
 
-// Jellyfish.updateDubEpisodesById("20")
+// Jellyfish.updateDubEpisodesById("5680")
 //   .then((data) => {
 //     colorize_info(`${data}`);
 //   })
@@ -24,13 +24,11 @@ database();
 //     colorize_error(error);
 //   });
 
-// Jellyfish.singleInsertById("52")
+// Jellyfish.singleInsertById("142826")
 //   .then((data) => {
-//     colorize_success(
-//       `[singleInsertById] ${data._id} ${
-//         data.title.english && data.title.english
-//       }`
-//     );
+//     if (data?._id) {
+//       colorize_success(`[${data?.title?.english}] [${data?._id}] inserted.`);
+//     }
 //   })
 //   .catch((error) => {
 //     colorize_error(error);
