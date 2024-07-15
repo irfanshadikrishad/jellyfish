@@ -24,7 +24,7 @@ database();
 //     colorize_error(error);
 //   });
 
-// Jellyfish.singleInsertById("142826")
+// Jellyfish.singleInsertById("170695")
 //   .then((data) => {
 //     if (data?._id) {
 //       colorize_success(`[${data?.title?.english}] [${data?._id}] inserted.`);
@@ -34,9 +34,13 @@ database();
 //     colorize_error(error);
 //   });
 
-// Jellyfish.deleteByAnilistId(153288)
+// Jellyfish.deleteByAnilistId(595)
 //   .then((data) => {
-//     console.log(data);
+//     if (data) {
+//       colorize_success(`deleted successfully.`);
+//     } else {
+//       colorize_error(`somethings wrong.`);
+//     }
 //   })
 //   .catch((error) => {
 //     colorize_error(error);
@@ -50,9 +54,17 @@ database();
 //     colorize_error(error);
 //   });
 
-Jellyfish.insertAllAnimes()
+// Jellyfish.insertAllAnimes(563)
+//   .then((data) => {
+//     colorize_success(data);
+//   })
+//   .catch((error) => {
+//     colorize_error(error);
+//   });
+
+Jellyfish.removeZero()
   .then((data) => {
-    colorize_success(data);
+    console.log(data);
   })
   .catch((error) => {
     colorize_error(error);

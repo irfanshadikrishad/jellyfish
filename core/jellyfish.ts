@@ -187,21 +187,37 @@ class Jellyfish {
           recommendations: recommendModified,
         });
 
-        const saved_Anime = await anime.save();
-        if (saved_Anime) {
-          colorize_success(
-            `[${saved_Anime?.title?.english}] [${saved_Anime.anilistId}] inserted.`
+        if (sub_episodes.length === 0) {
+          colorize_error(
+            `[sub] ${sub_episodes.length} episodes. aborting insertion...`
           );
-          return saved_Anime;
         } else {
-          colorize_error(`[singleInsertById] save error`);
+          const saved_Anime = await anime.save();
+          if (saved_Anime) {
+            colorize_success(
+              `[${
+                saved_Anime?.title?.english
+                  ? saved_Anime?.title?.english
+                  : saved_Anime?.title?.romaji
+              }] [${saved_Anime.anilistId}] inserted.`
+            );
+            return saved_Anime;
+          } else {
+            colorize_error(`[${anilistId}] save error`);
+          }
         }
       } catch (error) {
-        colorize_error(`[singleInsertById] ${anilistId} not found`);
+        colorize_error(`[${anilistId}] not found`);
       }
     } else {
       colorize_success(
-        `[${isAlreadyAdded?.title?.english}] [${isAlreadyAdded?.anilistId}] [${isAlreadyAdded?._id}] already added.`
+        `[${
+          isAlreadyAdded?.title?.english
+            ? isAlreadyAdded?.title?.english
+            : isAlreadyAdded?.title?.romaji
+        }] [${isAlreadyAdded?.anilistId}] [${
+          isAlreadyAdded?._id
+        }] already added.`
       );
       return `[${isAlreadyAdded?.title?.english}] already added.`;
     }
@@ -288,14 +304,16 @@ class Jellyfish {
 
           // Now that we got subId, dubId let fetch their episodes from gogoanime
           if (gogo_subId && gogo_dubId) {
-            const gogoSubInfo = await gogoanime.fetchAnimeInfo(gogo_subId);
-            const gogoDubInfo = await gogoanime.fetchAnimeInfo(gogo_dubId);
+            const gogoSubInfo =
+              (await gogoanime.fetchAnimeInfo(gogo_subId)) || null;
+            const gogoDubInfo =
+              (await gogoanime.fetchAnimeInfo(gogo_dubId)) || null;
             // Storing episodes inside variables
-            const gogoSubEpisodes = gogoSubInfo.episodes;
-            const gogoDubEpisodes = gogoDubInfo.episodes;
+            const gogoSubEpisodes = gogoSubInfo?.episodes;
+            const gogoDubEpisodes = gogoDubInfo?.episodes;
             // These are the already added episodes
-            const alreadyAddedSubEpisodes = ong_ing.sub_episodes;
-            const alreadyAddedDubEpisodes = ong_ing.dub_episodes;
+            const alreadyAddedSubEpisodes = ong_ing?.sub_episodes;
+            const alreadyAddedDubEpisodes = ong_ing?.dub_episodes;
 
             if (gogoSubEpisodes) {
               const isSubSame =
@@ -307,6 +325,7 @@ class Jellyfish {
               if (!isSubSame) {
                 const updatedGogoSubEpisodes = await Promise.all(
                   gogoSubEpisodes.map(async (g_e) => {
+                    colorize_info(`[sub] ${g_e.id}`);
                     try {
                       const sources = await gogoanime.fetchEpisodeSources(
                         g_e.id
@@ -489,9 +508,10 @@ class Jellyfish {
 
   /**
    * Insert all animes
+   * @param {number} from page number
    * @returns {any}
    */
-  static async insertAllAnimes(): Promise<any> {
+  static async insertAllAnimes(from: number): Promise<any> {
     let loop = true;
     let request_Count = 0;
     const url = "https://graphql.anilist.co";
@@ -511,7 +531,7 @@ class Jellyfish {
         }
       }
     `;
-    let variables = { page: 352, perPage: 1 };
+    let variables = { page: from, perPage: 1 };
 
     while (loop) {
       const request = await fetch(url, {
@@ -569,16 +589,28 @@ class Jellyfish {
         request_Count++;
         // Counter to bypass rate-limit
         if (request_Count >= 1) {
-          colorize_info(
-            `Interval initiated, page ${
-              variables.page
-            }, reached ${1} requests...`
-          );
-          await new Promise((resolve) => setTimeout(resolve, 60000)); // Wait for interval delay
+          colorize_info(`Interval initiated...`);
+          await new Promise((resolve) => setTimeout(resolve, 30000)); // Wait for interval delay
           request_Count = 0; // Reset request count after interval
-          colorize_info(`Interval reset...`);
+          colorize_info(`Interval reset... [p${variables.page}]`);
         }
       }
+    }
+  }
+
+  /**
+   * remove anime with 0 episodes
+   */
+  static async removeZero() {
+    try {
+      const rmv = await Anime.deleteMany({ sub_episodes: { $size: 0 } });
+      if (rmv) {
+        return rmv;
+      } else {
+        colorize_error(`something wrong in removeZero`);
+      }
+    } catch (error) {
+      return error;
     }
   }
 }
