@@ -1,71 +1,81 @@
+#!/usr/bin/env node
+import arg from "arg";
 import { Jellyfish } from "./core/jellyfish";
-import database from "./database/database";
 import {
+  colorize_success,
   colorize_error,
   colorize_info,
-  colorize_success,
 } from "./utils/colorize";
+import database from "./database/database";
 
-database();
-
-// Jellyfish.updateDubEpisodesById("5680")
-//   .then((data) => {
-//     colorize_info(`${data}`);
-//   })
-//   .catch((error) => {
-//     colorize_error(error);
-//   });
-
-// Jellyfish.updateAllOngoing()
-//   .then((count) => {
-//     colorize_success(`[updateAllOngoing] ${count} updated`);
-//   })
-//   .catch((error) => {
-//     colorize_error(error);
-//   });
-
-// Jellyfish.singleInsertById("170695")
-//   .then((data) => {
-//     if (data?._id) {
-//       colorize_success(`[${data?.title?.english}] [${data?._id}] inserted.`);
-//     }
-//   })
-//   .catch((error) => {
-//     colorize_error(error);
-//   });
-
-// Jellyfish.deleteByAnilistId(595)
-//   .then((data) => {
-//     if (data) {
-//       colorize_success(`deleted successfully.`);
-//     } else {
-//       colorize_error(`somethings wrong.`);
-//     }
-//   })
-//   .catch((error) => {
-//     colorize_error(error);
-//   });
-
-// Jellyfish.insertBasedOnRange(50, 100)
-//   .then((data) => {
-//     colorize_success(`[insertBasedOnRange] ${data}`);
-//   })
-//   .catch((error) => {
-//     colorize_error(error);
-//   });
-
-// Jellyfish.insertAllAnimes(563)
-//   .then((data) => {
-//     colorize_success(data);
-//   })
-//   .catch((error) => {
-//     colorize_error(error);
-//   });
-
-Jellyfish.removeZero()
-  .then((data) => {
-    console.log(data);
-  })
-  .catch((error) => {
-    colorize_error(error);
+try {
+  database();
+  const args = arg({
+    "--i1": String,
+    "--iall": Number,
+    "--r1": Number,
+    "--u0": Boolean,
+    "--ud": String,
   });
+  if (args["--i1"]) {
+    Jellyfish.singleInsertById(args["--i1"])
+      .then((data) => {
+        if (data?._id) {
+          colorize_success(
+            `[${data?.title?.english}] [${data?._id}] inserted.`
+          );
+        }
+        process.exit(0);
+      })
+      .catch((error) => {
+        colorize_error(error);
+        process.exit(0);
+      });
+  } else if (args["--iall"]) {
+    Jellyfish.insertAllAnimes(args["--iall"])
+      .then((data) => {
+        colorize_success(data);
+        process.exit(0);
+      })
+      .catch((error) => {
+        colorize_error(error);
+        process.exit(0);
+      });
+  } else if (args["--r1"]) {
+    Jellyfish.deleteByAnilistId(args["--r1"])
+      .then((data) => {
+        if (data) {
+          colorize_success(`[${args["--r1"]}] deleted successfully.`);
+          process.exit(0);
+        } else {
+          colorize_error(`[${args["--r1"]}] somethings wrong.`);
+          process.exit(0);
+        }
+      })
+      .catch((error) => {
+        colorize_error(error);
+      });
+  } else if (args["--u0"]) {
+    Jellyfish.updateAllOngoing()
+      .then((count) => {
+        colorize_success(`[u0] ${count}`);
+        process.exit(0);
+      })
+      .catch((error) => {
+        colorize_error(error);
+        process.exit(0);
+      });
+  } else if (args["--ud"]) {
+    Jellyfish.updateDubEpisodesById(args["--ud"])
+      .then((data) => {
+        colorize_info(`${data}`);
+        process.exit(0);
+      })
+      .catch((error) => {
+        colorize_error(error);
+        process.exit(0);
+      });
+  }
+} catch (error) {
+  colorize_error(String(error));
+}

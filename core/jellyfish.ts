@@ -94,12 +94,12 @@ class Jellyfish {
                 gogo_subEpisodes.map(async (epes, index) => {
                   colorize_info(`[sub] [${anilistId}] ${epes.id}`);
                   try {
-                    const sources = await anilist.fetchEpisodeSources(epes.id);
+                    // const sources = await anilist.fetchEpisodeSources(epes.id);
                     const episode_information = {
                       id: epes.id,
                       number: epes.number,
                       title: epes.title ? epes.title : null,
-                      sources: sources,
+                      // sources: sources,
                     };
                     return episode_information;
                   } catch (error) {
@@ -134,12 +134,12 @@ class Jellyfish {
                 gogo_dubEpisodes.map(async (epes, index) => {
                   colorize_info(`[dub] [${anilistId}] ${epes.id}`);
                   try {
-                    const sources = await anilist.fetchEpisodeSources(epes.id);
+                    // const sources = await anilist.fetchEpisodeSources(epes.id);
                     const episode_information = {
                       id: epes.id,
                       number: epes.number,
                       title: epes.title ? epes.title : null,
-                      sources: sources,
+                      // sources: sources,
                     };
                     return episode_information;
                   } catch (error) {
@@ -590,8 +590,8 @@ class Jellyfish {
         // Counter to bypass rate-limit
         if (request_Count >= 1) {
           colorize_info(`Interval initiated...`);
-          await new Promise((resolve) => setTimeout(resolve, 30000)); // Wait for interval delay
-          request_Count = 0; // Reset request count after interval
+          await new Promise((resolve) => setTimeout(resolve, 20000));
+          request_Count = 0;
           colorize_info(`Interval reset... [p${variables.page}]`);
         }
       }
