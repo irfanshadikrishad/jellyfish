@@ -1,7 +1,7 @@
 import { META, ANIME } from "@consumet/extensions";
-import chalk from "chalk";
 import Anime from "../schema/anime";
 import fetch from "node-fetch";
+import * as fs from "fs";
 
 const anilist = new META.Anilist();
 const gogoanime = new ANIME.Gogoanime();
@@ -361,6 +361,7 @@ class Jellyfish {
   }
 
   /**
+   * To update Dub episodes of anime
    * @param {string} anilistId
    * @returns {string} update information
    */
@@ -369,9 +370,7 @@ class Jellyfish {
   ): Promise<string | undefined> {
     try {
       // Lets give an info about work
-      colorize_info(
-        `[updateDubEpisodesById] initiating operation on (${anilistId})`
-      );
+      colorize_info(`[ud] Initiating... [${anilistId}]`);
       // First of all let's check if the anime by this anilist id is in our database or not
       const isExist = await Anime.findOne({ anilistId });
       if (isExist) {
@@ -396,7 +395,7 @@ class Jellyfish {
               { new: true }
             );
             if (update) {
-              return `[${isExist.anilistId}] +${
+              return `[ud] [${isExist.anilistId}] +${
                 newEpisodesFromGogo.length - alreadyHaveEpisodes.length
               } episodes`;
             }
@@ -411,11 +410,11 @@ class Jellyfish {
           }`;
         }
       } else {
-        return `[${anilistId}] does not exist in database`;
+        return `[ud] [${anilistId}] does not exist in database`;
       }
     } catch (error) {
       colorize_error(`${error}`);
-      new Error(`error from updateDubEpisodesById`);
+      throw new Error(`error from u0: ${error}`);
     }
   }
 
@@ -463,7 +462,11 @@ class Jellyfish {
         data?: {
           Page: {
             pageInfo: {
+              total: number;
+              currentPage: number;
+              lastPage: number;
               hasNextPage: boolean;
+              perPage: number;
             };
             media: {
               id: number;
@@ -505,14 +508,22 @@ class Jellyfish {
           colorize_info(`Interval initiated...`);
           await new Promise((resolve) => setTimeout(resolve, 10000));
           request_Count = 0;
-          colorize_info(`Interval reset... [p${variables.page}]`);
+          colorize_info(
+            `Interval reset... [${variables.page}/${response?.data?.Page?.pageInfo?.total}]`
+          );
+          // SAVE THE LAST INSERTED PAGE NUMBER, IN CASE OF EMERGENCIES
+          fs.writeFile("lastInserted.txt", `${variables.page}`, (err) => {
+            if (err) {
+              colorize_error(`${err}`);
+            }
+          });
         }
       }
     }
   }
 
   /**
-   * remove anime with 0 episodes
+   * removes anime with 0 episodes
    */
   static async removeZero() {
     try {
@@ -528,6 +539,7 @@ class Jellyfish {
   }
 
   /**
+   * To get the statistics from database
    * @returns {Promise<any>} stats
    */
   static async getStats(): Promise<any> {

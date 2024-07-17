@@ -1,11 +1,7 @@
 #!/usr/bin/env node
 import arg from "arg";
 import { Jellyfish } from "./core/jellyfish";
-import {
-  colorize_success,
-  colorize_error,
-  colorize_info,
-} from "./utils/colorize";
+import { colorize_success, colorize_error } from "./utils/colorize";
 import database from "./database/database";
 
 try {
@@ -69,7 +65,7 @@ try {
   } else if (args["--ud"]) {
     Jellyfish.updateDubEpisodesById(args["--ud"])
       .then((data) => {
-        colorize_info(`${data}`);
+        colorize_success(`${data}`);
         process.exit(0);
       })
       .catch((error) => {
