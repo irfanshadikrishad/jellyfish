@@ -16,6 +16,7 @@ try {
     "--r1": Number,
     "--u0": Boolean,
     "--ud": String,
+    "--stats": Boolean,
   });
   if (args["--i1"]) {
     Jellyfish.singleInsertById(args["--i1"])
@@ -58,7 +59,7 @@ try {
   } else if (args["--u0"]) {
     Jellyfish.updateAllOngoing()
       .then((count) => {
-        colorize_success(`[u0] ${count}`);
+        colorize_success(`[u0] ${count} updated.`);
         process.exit(0);
       })
       .catch((error) => {
@@ -69,6 +70,16 @@ try {
     Jellyfish.updateDubEpisodesById(args["--ud"])
       .then((data) => {
         colorize_info(`${data}`);
+        process.exit(0);
+      })
+      .catch((error) => {
+        colorize_error(error);
+        process.exit(0);
+      });
+  } else if (args["--stats"]) {
+    Jellyfish.getStats()
+      .then((data) => {
+        colorize_success(`Total Anime: ${data?.total_anime}`);
         process.exit(0);
       })
       .catch((error) => {
