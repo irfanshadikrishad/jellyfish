@@ -1,6 +1,6 @@
 import { config } from "dotenv";
-import chalk from "chalk";
 import { connect } from "mongoose";
+import { colorize_error, colorize_mark } from "../utils/colorize";
 
 config();
 const URI = process.env.MONGODB_URI;
@@ -10,13 +10,17 @@ async function database() {
     try {
       const connection = await connect(URI);
       if (connection) {
-        console.log(chalk.cyan(`[database] ${connection.connection.port}`));
+        colorize_mark(`[database] ${connection.connection.port}`);
       } else {
-        console.log(chalk.magenta(`[database] error`));
+        colorize_error(`[database] error`);
       }
     } catch (error) {
-      console.log(error);
+      colorize_error(String(error));
     }
+  } else {
+    colorize_error(
+      `[database] MONGODB_URI not provided as environment variable.`
+    );
   }
 }
 

@@ -9,5 +9,8 @@ function colorize_success(text: string) {
 function colorize_error(text: string) {
   console.log(chalk.magenta(text));
 }
+function colorize_mark(text: string) {
+  console.log(chalk.black.bgCyan(text));
+}
 
-export { colorize_info, colorize_success, colorize_error };
+export { colorize_info, colorize_success, colorize_error, colorize_mark };

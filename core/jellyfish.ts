@@ -81,7 +81,6 @@ class Jellyfish {
         // STORAGE
         let sub_episodes: any[] = [];
         let dub_episodes: any[] = [];
-
         // GET SUB EPISODES
         if (gogo_subId) {
           try {
@@ -219,40 +218,18 @@ class Jellyfish {
           isAlreadyAdded?._id
         }] already added.`
       );
-      return `[${isAlreadyAdded?.title?.english}] already added.`;
+      return `[${
+        isAlreadyAdded?.title?.english
+          ? isAlreadyAdded?.title?.english
+          : isAlreadyAdded?.title?.romaji
+      }] already added.`;
     }
   }
 
   /**
-   * returns anilist access token
-   * @param {number} start - to start from
-   * @param {number} end - to end from
-   * @returns {any[]} array of added anilistId
-   *  */
-  static async insertBasedOnRange(start: number, end: number): Promise<any> {
-    let added = [];
-    for (let index = start; index <= end; index++) {
-      try {
-        colorize_info(`[insertBasedOnRange] getting ${index}`);
-        const check = await this.singleInsertById(String(index));
-        if (check && check._id) {
-          added.push(check.anilistId);
-        }
-      } catch (error) {
-        colorize_error(`[insertBasedOnRange] ${error}`);
-      }
-    }
-    if (added.length > 0) {
-      return added;
-    } else {
-      return `0 added`;
-    }
-  }
-
-  /**
-   * returns if deleted or not
+   * To delete anime by anilistId
    * @param {number} anilistId
-   * @returns {any}
+   * @returns {any} returns if deleted or not
    */
   static async deleteByAnilistId(anilistId: number): Promise<any> {
     try {
@@ -263,18 +240,17 @@ class Jellyfish {
         colorize_error(del);
       }
     } catch (error) {
-      new Error(`[deleteByAnilistId] ${error}`);
+      throw new Error(`[r1] ${error}`);
     }
   }
 
   /**
    * Update All Ongoing Animes
-   * @returns {Promise<any>} total updated count
-   * Dub may not be updated on last few episodes if after status changes to completed after sub release
+   * @returns total episodes added
    */
   static async updateAllOngoing(): Promise<any> {
     try {
-      let updatedTotal = 0;
+      let episodesInserted = 0;
       const getAllOngoingAnimes = await Anime.find({ status: "Ongoing" });
       colorize_success(
         `[u0] ${getAllOngoingAnimes.length} ongoing anime found.`
@@ -306,16 +282,48 @@ class Jellyfish {
                 { new: true }
               );
               if (storin) {
-                updatedTotal++;
-                colorize_info(
+                colorize_success(
                   `[u0] [sub] [${ongoing.anilistId}] +${
                     latestEpisodes &&
                     latestEpisodes?.length - alreadyAddedEpisodes?.length
                   } episodes.`
                 );
+                let difference =
+                  (latestEpisodes &&
+                    latestEpisodes?.length - alreadyAddedEpisodes?.length) ||
+                  0;
+                episodesInserted += difference;
               }
             } else {
               colorize_info(`[u0] [sub] [${ongoing.anilistId}] up-to-date`);
+            }
+            // STATUS UPDATE FROM ONGOING TO FINISHED | ELSE.
+            // We need subInfo, so its better to be inside sub section
+            try {
+              if (gogoSubInfo?.status !== ongoing?.status) {
+                const update_Status = await Anime.findByIdAndUpdate(
+                  {
+                    _id: ongoing._id,
+                  },
+                  { status: gogoSubInfo.status },
+                  { new: true }
+                );
+                if (update_Status) {
+                  colorize_success(
+                    `[u0] [${ongoing.anilistId}] [status] ${ongoing?.status} => ${gogoSubInfo?.status}`
+                  );
+                } else {
+                  colorize_error(
+                    `[u0] [${ongoing.anilistId}] [status] update-error.`
+                  );
+                }
+              } else {
+                colorize_info(
+                  `[u0] [${ongoing.anilistId}] [status] up-to-date.`
+                );
+              }
+            } catch (error) {
+              colorize_error(`[u0] [${ongoing.anilistId}] [status] ${error}`);
             }
           } catch (error) {
             colorize_error(`[u0] [sub] [${ongoing.anilistId}] ${error}`);
@@ -336,13 +344,17 @@ class Jellyfish {
                 { new: true }
               );
               if (storin) {
-                updatedTotal++;
-                colorize_info(
+                colorize_success(
                   `[u0] [dub] [${ongoing.anilistId}] +${
                     latestEpisodes &&
                     latestEpisodes?.length - alreadyAddedEpisodes?.length
                   } episodes.`
                 );
+                let difference =
+                  (latestEpisodes &&
+                    latestEpisodes.length - alreadyAddedEpisodes.length) ||
+                  0;
+                episodesInserted += difference;
               }
             } else {
               colorize_info(`[u0] [dub] [${ongoing.anilistId}] up-to-date`);
@@ -354,14 +366,15 @@ class Jellyfish {
           }
         }
       }
-      return updatedTotal;
+      return episodesInserted;
     } catch (error) {
-      colorize_error(String(error));
+      // colorize_error(`[u0] ${error}`);
+      throw new Error(`[u0] ${error}`);
     }
   }
 
   /**
-   * To update Dub episodes of anime
+   * To update dub episodes of anime by anilistId
    * @param {string} anilistId
    * @returns {string} update information
    */
@@ -370,7 +383,7 @@ class Jellyfish {
   ): Promise<string | undefined> {
     try {
       // Lets give an info about work
-      colorize_info(`[ud] Initiating... [${anilistId}]`);
+      colorize_info(`Initiating...`);
       // First of all let's check if the anime by this anilist id is in our database or not
       const isExist = await Anime.findOne({ anilistId });
       if (isExist) {
@@ -395,12 +408,16 @@ class Jellyfish {
               { new: true }
             );
             if (update) {
-              return `[ud] [${isExist.anilistId}] +${
+              return `[${isExist.anilistId}] +${
                 newEpisodesFromGogo.length - alreadyHaveEpisodes.length
               } episodes`;
             }
           } else {
-            return `[${anilistId}] already up-to-date`;
+            return `[${
+              isExist?.title?.english
+                ? isExist?.title?.english
+                : isExist?.title?.romaji
+            }] already up-to-date`;
           }
         } else {
           return `[${anilistId}] no dub found for ${
@@ -410,11 +427,10 @@ class Jellyfish {
           }`;
         }
       } else {
-        return `[ud] [${anilistId}] does not exist in database`;
+        return `[${anilistId}] does not exist in database`;
       }
     } catch (error) {
-      colorize_error(`${error}`);
-      throw new Error(`error from u0: ${error}`);
+      throw new Error(`[ud] ${error}`);
     }
   }
 
@@ -483,7 +499,7 @@ class Jellyfish {
         for (const anime of response?.data?.Page?.media || []) {
           try {
             // colorize_info(`${String(anime?.id)}, ${request_Count}`);
-            await this.singleInsertById(String(anime.id));
+            await Jellyfish.singleInsertById(String(anime.id));
 
             if (response.data?.Page.pageInfo.hasNextPage) {
               variables.page += 1;
@@ -492,6 +508,7 @@ class Jellyfish {
               return `[] inserted successfully.`;
             }
           } catch (error) {
+            // In case of error show the error and move to the next page
             colorize_error(String(error));
             if (response.data?.Page.pageInfo.hasNextPage) {
               variables.page += 1;
@@ -506,7 +523,7 @@ class Jellyfish {
         // Counter to bypass rate-limit
         if (request_Count >= 1) {
           colorize_info(`Interval initiated...`);
-          await new Promise((resolve) => setTimeout(resolve, 10000));
+          await new Promise((resolve) => setTimeout(resolve, 2000));
           request_Count = 0;
           colorize_info(
             `Interval reset... [${variables.page}/${response?.data?.Page?.pageInfo?.total}]`
@@ -523,31 +540,112 @@ class Jellyfish {
   }
 
   /**
-   * removes anime with 0 episodes
+   * Remove's anime with zero episodes
+   * @returns {Promise<number>} number of documents deleted
    */
-  static async removeZero() {
+  static async remove_Zero(): Promise<number> {
     try {
-      const rmv = await Anime.deleteMany({ sub_episodes: { $size: 0 } });
-      if (rmv) {
-        return rmv;
+      const removed_0 = await Anime.deleteMany({ sub_episodes: { $size: 0 } });
+      if (removed_0.acknowledged) {
+        return removed_0.deletedCount;
       } else {
-        colorize_error(`something wrong in removeZero`);
+        return 0;
       }
     } catch (error) {
-      return error;
+      throw new Error(`[r0] ${error}`);
     }
   }
 
   /**
    * To get the statistics from database
-   * @returns {Promise<any>} stats
+   * @returns total_anime
+   * @returns status_ongoing
+   * @returns status_completed
+   * @returns status_hiatus
+   * @returns status_cancelled
+   * @returns status_notYetAired
+   * @returns status_unknown
+   * @returns format_TV
+   * @returns format_TV_Short
+   * @returns format_Movie
+   * @returns format_Special
+   * @returns format_OVA
+   * @returns format_ONA
+   * @returns format_Music
+   * @returns format_Manga
+   * @returns format_Novel
+   * @returns format_Oneshot
+   * @returns total_adult
    */
   static async getStats(): Promise<any> {
     try {
+      // TOTAL COUNT
       const total_Anime = await Anime.find({});
-      return { total_anime: total_Anime.length };
+      // colorize_info(`Anime      ${total_Anime.length}`);
+      // STATUS
+      // const ongoing = await Anime.find({ status: "Ongoing" });
+      // colorize_info(`Ongoing    ${ongoing.length}`);
+      // const completed = await Anime.find({ status: "Completed" });
+      // colorize_info(`Completed  ${completed.length}`);
+      // const hiatus = await Anime.find({ status: "Hiatus" });
+      // colorize_info(`Hiatus     ${hiatus.length}`);
+      // const cancelled = await Anime.find({ status: "Cancelled" });
+      // colorize_info(`Cancelled  ${cancelled.length}`);
+      // const not_yet_aired = await Anime.find({ status: "Not yet aired" });
+      // colorize_info(`Upcoming   ${not_yet_aired.length}`);
+      // const unknown = await Anime.find({ status: "Unknown" });
+      // colorize_info(`Unknown    ${unknown.length}`);
+      // Adult
+      const adult = await Anime.find({ isAdult: true });
+      // colorize_info(`Adult     ${adult.length}`);
+      // // countryOfOrigin
+      // const origin_japan = await Anime.find({ countryOfOrigin: "JP" }); // must have more origins?
+      // colorize_info(`Japan     ${origin_japan.length}`);
+      // // Format
+      // const tv = await Anime.find({ format: "TV" });
+      // colorize_info(`TV              ${tv.length}`);
+      // const tv_Shrot = await Anime.find({ format: "TV_SHORT" });
+      // colorize_info(`TV_SHORT        ${tv_Shrot.length}`);
+      // const movie = await Anime.find({ format: "MOVIE" });
+      // colorize_info(`Movie           ${movie.length}`);
+      // const special = await Anime.find({ format: "SPECIAL" });
+      // colorize_info(`Special         ${special.length}`);
+      // const ova = await Anime.find({ format: "OVA" });
+      // colorize_info(`OVA             ${ova.length}`);
+      // const ona = await Anime.find({ format: "ONA" });
+      // colorize_info(`ONA             ${ona.length}`);
+      // const music = await Anime.find({ format: "MUSIC" });
+      // colorize_info(`Music           ${music.length}`);
+      // const manga = await Anime.find({ format: "MANGA" });
+      // colorize_info(`Manga           ${manga.length}`);
+      // const novel = await Anime.find({ format: "NOVEL" });
+      // colorize_info(`Novel           ${novel.length}`);
+      // const one_Shot = await Anime.find({ format: "ONE_SHOT" });
+      // colorize_info(`OneShot         ${one_Shot.length}`);
+
+      return {
+        total_anime: total_Anime.length,
+        // status_ongoing: ongoing.length,
+        // status_completed: completed.length,
+        // status_hiatus: hiatus.length,
+        // status_cancelled: cancelled.length,
+        // status_notYetAired: not_yet_aired.length,
+        // status_unknown: unknown.length,
+        // format_TV: tv.length,
+        // format_TV_Short: tv_Shrot.length,
+        // format_Movie: movie.length,
+        // format_Special: special.length,
+        // format_OVA: ova.length,
+        // format_ONA: ona.length,
+        // format_Music: music.length,
+        // format_Manga: manga.length,
+        // format_Novel: novel.length,
+        // format_Oneshot: one_Shot.length,
+        // origin_japan: origin_japan.length,
+        total_adult: adult.length,
+      };
     } catch (error) {
-      throw new Error(`Error getting stats.`);
+      throw new Error(`[stats] ${error}`);
     }
   }
 }

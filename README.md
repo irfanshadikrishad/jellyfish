@@ -1,6 +1,6 @@
 # jellyfish
 
-Scrap and Store in your own mongodb database. To get more freedom over data.
+CLI tool to scrape and store anime(s) in your own mongodb database.
 
 To install dependencies:
 
@@ -8,8 +8,21 @@ To install dependencies:
 bun install
 ```
 
-To run:
+Environment Variables:
+Copy variable's from `.env.example` to `.env` and provide its values.
 
 ```bash
-bun index.ts
+MONGODB_URI=
+```
+
+Available Commands:
+
+```bash
+bun index.ts --i1 [anilistId]
+bun index.ts --iall [from_page]
+bun index.ts --r0
+bun index.ts --r1 [anilistId]
+bun index.ts --u0
+bun index.ts --ud [anilistId]
+bun index.ts --stats
 ```
