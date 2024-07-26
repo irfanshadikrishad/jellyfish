@@ -9,6 +9,7 @@ const gogoanime = new ANIME.Gogoanime();
 import {
   colorize_error,
   colorize_info,
+  colorize_mark2,
   colorize_success,
 } from "../utils/colorize";
 import { replaceMultipleHyphens } from "../utils/workers";
@@ -44,25 +45,39 @@ class Jellyfish {
           isAdult,
           nextAiringEpisode,
           studios,
+          season,
+          releaseDate,
           recommendations,
         } = await anilist.fetchAnimeInfo(anilistId, false);
 
         // MODIFY RECOMMENDATION AND STORE
         const recommendModified: any[] = [];
-        recommendations?.forEach((r) => {
-          let insertRec = {
-            animeId: r.id,
-            malId: r.malId,
-            title: r.title,
-            status: r.status,
-            episodes: r.episodes,
-            poster: r.image,
-            cover: r.cover,
-            rating: r.rating,
-            format: r.type,
-          };
-          recommendModified.push(insertRec);
-        });
+        recommendations?.forEach(
+          ({
+            id,
+            malId,
+            title,
+            status,
+            episodes,
+            image,
+            cover,
+            rating,
+            type,
+          }) => {
+            let insertRec = {
+              animeId: id,
+              malId: malId,
+              title: title,
+              status: status,
+              episodes: episodes,
+              poster: image,
+              cover: cover,
+              rating: rating,
+              format: type,
+            };
+            recommendModified.push(insertRec);
+          }
+        );
         colorize_success(
           `[recommendation] [${anilistId}] ${recommendModified.length}`
         );
@@ -184,16 +199,28 @@ class Jellyfish {
           nextAiringEpisode: nextAiringEpisode,
           studios: studios,
           recommendations: recommendModified,
+          season: season,
+          release_date: releaseDate,
         });
 
-        if (sub_episodes.length === 0) {
+        if (
+          sub_episodes.length === 0 &&
+          typeof title === "object" &&
+          title !== null
+        ) {
           colorize_error(
-            `[sub] ${sub_episodes.length} episodes. aborting insertion...`
+            `[${title?.english ? title.english : title?.romaji}] [sub] ${
+              sub_episodes.length
+            } episodes. aborting insertion...`
+          );
+        } else if (sub_episodes.length === 0) {
+          colorize_error(
+            `[sub] ${sub_episodes.length} episodes. Aborting insertion...`
           );
         } else {
           const saved_Anime = await anime.save();
           if (saved_Anime) {
-            colorize_success(
+            colorize_mark2(
               `[${
                 saved_Anime?.title?.english
                   ? saved_Anime?.title?.english
@@ -442,6 +469,7 @@ class Jellyfish {
   static async insertAllAnimes(from: number): Promise<any> {
     let loop = true;
     let request_Count = 0;
+    let animeInserted = 0;
     const url = "https://graphql.anilist.co";
     const query = `
       query ($page: Int, $perPage: Int) {
@@ -499,13 +527,19 @@ class Jellyfish {
         for (const anime of response?.data?.Page?.media || []) {
           try {
             // colorize_info(`${String(anime?.id)}, ${request_Count}`);
-            await Jellyfish.singleInsertById(String(anime.id));
+            const saved_Anime = await Jellyfish.singleInsertById(
+              String(anime.id)
+            );
+
+            if (saved_Anime && saved_Anime?._id) {
+              animeInserted++;
+            }
 
             if (response.data?.Page.pageInfo.hasNextPage) {
               variables.page += 1;
             } else {
               loop = false;
-              return `[] inserted successfully.`;
+              return `[iall] ${animeInserted} inserted successfully.`;
             }
           } catch (error) {
             // In case of error show the error and move to the next page
@@ -514,7 +548,7 @@ class Jellyfish {
               variables.page += 1;
             } else {
               loop = false;
-              return `[] inserted successfully.`;
+              return `[iall] ${animeInserted} inserted successfully.`;
             }
           }
         }
@@ -522,16 +556,18 @@ class Jellyfish {
         request_Count++;
         // Counter to bypass rate-limit
         if (request_Count >= 1) {
-          colorize_info(`Interval initiated...`);
-          await new Promise((resolve) => setTimeout(resolve, 2000));
+          colorize_info(
+            `[${variables.page}/${response?.data?.Page?.pageInfo?.total}] Interval initiated...`
+          );
+          await new Promise((resolve) => setTimeout(resolve, 3000));
           request_Count = 0;
           colorize_info(
-            `Interval reset... [${variables.page}/${response?.data?.Page?.pageInfo?.total}]`
+            `[${variables.page}/${response?.data?.Page?.pageInfo?.total}] Interval reset...`
           );
           // SAVE THE LAST INSERTED PAGE NUMBER, IN CASE OF EMERGENCIES
           fs.writeFile("lastInserted.txt", `${variables.page}`, (err) => {
             if (err) {
-              colorize_error(`${err}`);
+              colorize_error(`[iall-fs] ${err}`);
             }
           });
         }
@@ -583,7 +619,7 @@ class Jellyfish {
       const total_Anime = await Anime.find({});
       // colorize_info(`Anime      ${total_Anime.length}`);
       // STATUS
-      // const ongoing = await Anime.find({ status: "Ongoing" });
+      const ongoing = await Anime.find({ status: "Ongoing" });
       // colorize_info(`Ongoing    ${ongoing.length}`);
       // const completed = await Anime.find({ status: "Completed" });
       // colorize_info(`Completed  ${completed.length}`);
@@ -599,20 +635,23 @@ class Jellyfish {
       const adult = await Anime.find({ isAdult: true });
       // colorize_info(`Adult     ${adult.length}`);
       // // countryOfOrigin
-      // const origin_japan = await Anime.find({ countryOfOrigin: "JP" }); // must have more origins?
+      const origin_japan = await Anime.find({ origin: "JP" }); // must have more origins?
       // colorize_info(`Japan     ${origin_japan.length}`);
+      const origin_southKorea = await Anime.find({ origin: "KR" });
+      const origin_china = await Anime.find({ origin: "CN" });
+      // const origin_taiwan = await Anime.find({ origin: "TW" });
       // // Format
-      // const tv = await Anime.find({ format: "TV" });
+      const tv = await Anime.find({ format: "TV" });
       // colorize_info(`TV              ${tv.length}`);
-      // const tv_Shrot = await Anime.find({ format: "TV_SHORT" });
+      const tv_Shrot = await Anime.find({ format: "TV_SHORT" });
       // colorize_info(`TV_SHORT        ${tv_Shrot.length}`);
-      // const movie = await Anime.find({ format: "MOVIE" });
+      const movie = await Anime.find({ format: "MOVIE" });
       // colorize_info(`Movie           ${movie.length}`);
-      // const special = await Anime.find({ format: "SPECIAL" });
+      const special = await Anime.find({ format: "SPECIAL" });
       // colorize_info(`Special         ${special.length}`);
-      // const ova = await Anime.find({ format: "OVA" });
+      const ova = await Anime.find({ format: "OVA" });
       // colorize_info(`OVA             ${ova.length}`);
-      // const ona = await Anime.find({ format: "ONA" });
+      const ona = await Anime.find({ format: "ONA" });
       // colorize_info(`ONA             ${ona.length}`);
       // const music = await Anime.find({ format: "MUSIC" });
       // colorize_info(`Music           ${music.length}`);
@@ -625,23 +664,25 @@ class Jellyfish {
 
       return {
         total_anime: total_Anime.length,
-        // status_ongoing: ongoing.length,
+        status_ongoing: ongoing.length,
         // status_completed: completed.length,
         // status_hiatus: hiatus.length,
         // status_cancelled: cancelled.length,
         // status_notYetAired: not_yet_aired.length,
         // status_unknown: unknown.length,
-        // format_TV: tv.length,
-        // format_TV_Short: tv_Shrot.length,
-        // format_Movie: movie.length,
-        // format_Special: special.length,
-        // format_OVA: ova.length,
-        // format_ONA: ona.length,
+        format_TV: tv.length,
+        format_TV_Short: tv_Shrot.length,
+        format_Movie: movie.length,
+        format_Special: special.length,
+        format_OVA: ova.length,
+        format_ONA: ona.length,
         // format_Music: music.length,
         // format_Manga: manga.length,
         // format_Novel: novel.length,
         // format_Oneshot: one_Shot.length,
-        // origin_japan: origin_japan.length,
+        origin_japan: origin_japan.length,
+        origin_southKorea: origin_southKorea.length,
+        origin_china: origin_china.length,
         total_adult: adult.length,
       };
     } catch (error) {

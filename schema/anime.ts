@@ -44,6 +44,8 @@ const animeSchema = new Schema(
     ],
     totalEpisodes: Number,
     studios: [String],
+    season: String,
+    release_date: String,
     recommendations: [
       {
         animeId: String,
