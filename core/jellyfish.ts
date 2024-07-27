@@ -51,7 +51,7 @@ class Jellyfish {
         } = await anilist.fetchAnimeInfo(anilistId, false);
 
         // MODIFY RECOMMENDATION AND STORE
-        const recommendModified: any[] = [];
+        const recommendations_Modified: any[] = [];
         recommendations?.forEach(
           ({
             id,
@@ -64,22 +64,21 @@ class Jellyfish {
             rating,
             type,
           }) => {
-            let insertRec = {
+            recommendations_Modified.push({
               animeId: id,
               malId: malId,
               title: title,
               status: status,
-              episodes: Number(episodes),
+              episodes: episodes ? Number(episodes) : 0,
               poster: image,
               cover: cover,
-              rating: Number(rating),
+              rating: rating ? Number(rating) : 0,
               format: type,
-            };
-            recommendModified.push(insertRec);
+            });
           }
         );
         colorize_success(
-          `[recommendation] [${anilistId}] ${recommendModified.length}`
+          `[recommendation] [${anilistId}] ${recommendations_Modified.length}`
         );
 
         // GET GOGOID > GOGO_EPISODES > GOGO_EPISODE_SOURCES
@@ -198,7 +197,7 @@ class Jellyfish {
           isAdult: isAdult,
           nextAiringEpisode: nextAiringEpisode,
           studios: studios,
-          recommendations: recommendModified,
+          recommendations: recommendations_Modified,
           season: season,
           release_date: releaseDate,
         });
