@@ -69,10 +69,10 @@ class Jellyfish {
               malId: malId,
               title: title,
               status: status,
-              episodes: episodes,
+              episodes: Number(episodes),
               poster: image,
               cover: cover,
-              rating: rating,
+              rating: Number(rating),
               format: type,
             };
             recommendModified.push(insertRec);
@@ -189,7 +189,7 @@ class Jellyfish {
           origin: countryOfOrigin,
           format: type,
           duration: duration,
-          totalEpisodes: totalEpisodes,
+          totalEpisodes: totalEpisodes ? Number(totalEpisodes) : 0,
           airing_start: startDate,
           airing_end: endDate,
           status: status,
@@ -205,17 +205,18 @@ class Jellyfish {
 
         if (
           sub_episodes.length === 0 &&
+          dub_episodes.length === 0 &&
           typeof title === "object" &&
           title !== null
         ) {
           colorize_error(
             `[${title?.english ? title.english : title?.romaji}] [sub] ${
               sub_episodes.length
-            } episodes. aborting insertion...`
+            } [dub] ${dub_episodes.length} • Aborting insertion...`
           );
-        } else if (sub_episodes.length === 0) {
+        } else if (sub_episodes.length === 0 && dub_episodes.length === 0) {
           colorize_error(
-            `[sub] ${sub_episodes.length} episodes. Aborting insertion...`
+            `[sub] ${sub_episodes.length} [dub] ${dub_episodes.length} • Aborting insertion...`
           );
         } else {
           const saved_Anime = await anime.save();
@@ -233,7 +234,7 @@ class Jellyfish {
           }
         }
       } catch (error) {
-        colorize_error(`[${anilistId}] not found`);
+        colorize_error(`[${anilistId}] not found. ${error}`);
       }
     } else {
       colorize_success(
@@ -324,34 +325,6 @@ class Jellyfish {
             } else {
               colorize_info(`[u0] [sub] [${ongoing.anilistId}] up-to-date`);
             }
-            // STATUS UPDATE FROM ONGOING TO FINISHED | ELSE.
-            // We need subInfo, so its better to be inside sub section
-            try {
-              if (gogoSubInfo?.status !== ongoing?.status) {
-                const update_Status = await Anime.findByIdAndUpdate(
-                  {
-                    _id: ongoing._id,
-                  },
-                  { status: gogoSubInfo.status },
-                  { new: true }
-                );
-                if (update_Status) {
-                  colorize_success(
-                    `[u0] [${ongoing.anilistId}] [status] ${ongoing?.status} => ${gogoSubInfo?.status}`
-                  );
-                } else {
-                  colorize_error(
-                    `[u0] [${ongoing.anilistId}] [status] update-error.`
-                  );
-                }
-              } else {
-                colorize_info(
-                  `[u0] [${ongoing.anilistId}] [status] up-to-date.`
-                );
-              }
-            } catch (error) {
-              colorize_error(`[u0] [${ongoing.anilistId}] [status] ${error}`);
-            }
           } catch (error) {
             colorize_error(`[u0] [sub] [${ongoing.anilistId}] ${error}`);
           }
@@ -391,6 +364,35 @@ class Jellyfish {
               `[u0] [dub] [${ongoing.anilistId}] no-dubs-available`
             );
           }
+        }
+        // STATUS UPDATE FROM ONGOING TO FINISHED | ELSE.
+        // We need subInfo, so its better to be inside sub section
+        try {
+          const anilistSubInfo = await anilist.fetchAnimeInfo(
+            ongoing.anilistId
+          );
+          if (anilistSubInfo?.status !== ongoing?.status) {
+            const update_Status = await Anime.findByIdAndUpdate(
+              {
+                _id: ongoing._id,
+              },
+              { status: anilistSubInfo.status },
+              { new: true }
+            );
+            if (update_Status) {
+              colorize_success(
+                `[u0] [${ongoing.anilistId}] [status] ${ongoing?.status} => ${anilistSubInfo?.status}`
+              );
+            } else {
+              colorize_error(
+                `[u0] [${ongoing.anilistId}] [status] update-error.`
+              );
+            }
+          } else {
+            colorize_info(`[u0] [${ongoing.anilistId}] [status] up-to-date.`);
+          }
+        } catch (error) {
+          colorize_error(`[u0] [${ongoing.anilistId}] [status] ${error}`);
         }
       }
       return episodesInserted;
@@ -534,22 +536,9 @@ class Jellyfish {
             if (saved_Anime && saved_Anime?._id) {
               animeInserted++;
             }
-
-            if (response.data?.Page.pageInfo.hasNextPage) {
-              variables.page += 1;
-            } else {
-              loop = false;
-              return `[iall] ${animeInserted} inserted successfully.`;
-            }
           } catch (error) {
             // In case of error show the error and move to the next page
             colorize_error(String(error));
-            if (response.data?.Page.pageInfo.hasNextPage) {
-              variables.page += 1;
-            } else {
-              loop = false;
-              return `[iall] ${animeInserted} inserted successfully.`;
-            }
           }
         }
 
@@ -570,6 +559,13 @@ class Jellyfish {
               colorize_error(`[iall-fs] ${err}`);
             }
           });
+        }
+
+        if (variables.page < (response?.data?.Page?.pageInfo?.total || 0)) {
+          variables.page += 1;
+        } else {
+          loop = false;
+          return `[iall] ${animeInserted} inserted successfully.`;
         }
       }
     }
