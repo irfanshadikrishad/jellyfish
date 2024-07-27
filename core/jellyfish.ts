@@ -571,12 +571,15 @@ class Jellyfish {
   }
 
   /**
-   * Remove's anime with zero episodes
+   * Remove's anime if both sub and dub episodes are missing
    * @returns {Promise<number>} number of documents deleted
    */
   static async remove_Zero(): Promise<number> {
     try {
-      const removed_0 = await Anime.deleteMany({ sub_episodes: { $size: 0 } });
+      const removed_0 = await Anime.deleteMany({
+        $and: [{ sub_episodes: { $size: 0 } }, { dub_episodes: { $size: 0 } }],
+      });
+
       if (removed_0.acknowledged) {
         return removed_0.deletedCount;
       } else {

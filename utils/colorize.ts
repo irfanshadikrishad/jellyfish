@@ -15,6 +15,9 @@ function colorize_mark(text: string) {
 function colorize_mark2(text: string) {
   console.log(chalk.black.bgHex("#588157")(text)); //fern-green
 }
+function colorize_mark3(text: string) {
+  console.log(chalk.black.bgHex("#3E517A")(text));
+}
 
 export {
   colorize_info,
@@ -22,4 +25,5 @@ export {
   colorize_error,
   colorize_mark,
   colorize_mark2,
+  colorize_mark3,
 };
