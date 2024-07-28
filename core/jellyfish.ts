@@ -220,13 +220,6 @@ class Jellyfish {
         } else {
           const saved_Anime = await anime.save();
           if (saved_Anime) {
-            colorize_mark2(
-              `[${
-                saved_Anime?.title?.english
-                  ? saved_Anime?.title?.english
-                  : saved_Anime?.title?.romaji
-              }] [${saved_Anime.anilistId}] inserted.`
-            );
             return saved_Anime;
           } else {
             colorize_error(`[${anilistId}] save error`);
@@ -482,7 +475,7 @@ class Jellyfish {
             hasNextPage
             perPage
           }
-          media(type: ANIME, sort: TRENDING_DESC) {
+          media(type: ANIME, sort: POPULARITY_DESC) {
             id
           }
         }
@@ -534,6 +527,13 @@ class Jellyfish {
 
             if (saved_Anime && saved_Anime?._id) {
               animeInserted++;
+              colorize_mark2(
+                `[${animeInserted}] [${
+                  saved_Anime?.title?.english
+                    ? saved_Anime?.title?.english
+                    : saved_Anime?.title?.romaji
+                }] [${saved_Anime.anilistId}] inserted.`
+              );
             }
           } catch (error) {
             // In case of error show the error and move to the next page
@@ -553,7 +553,7 @@ class Jellyfish {
             `[${variables.page}/${response?.data?.Page?.pageInfo?.total}] Interval reset...`
           );
           // SAVE THE LAST INSERTED PAGE NUMBER, IN CASE OF EMERGENCIES
-          fs.appendFile("lastInserted.txt", `\n${variables.page}`, (err) => {
+          fs.appendFile("logs.txt", `\n${variables.page}`, (err) => {
             if (err) {
               colorize_error(`[iall-fs] ${err}`);
             }
