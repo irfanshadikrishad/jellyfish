@@ -482,7 +482,7 @@ class Jellyfish {
             hasNextPage
             perPage
           }
-          media(type: ANIME) {
+          media(type: ANIME, sort: TRENDING_DESC) {
             id
           }
         }
@@ -547,13 +547,13 @@ class Jellyfish {
           colorize_info(
             `[${variables.page}/${response?.data?.Page?.pageInfo?.total}] Interval initiated...`
           );
-          await new Promise((resolve) => setTimeout(resolve, 3000));
+          await new Promise((resolve) => setTimeout(resolve, 2500));
           request_Count = 0;
           colorize_info(
             `[${variables.page}/${response?.data?.Page?.pageInfo?.total}] Interval reset...`
           );
           // SAVE THE LAST INSERTED PAGE NUMBER, IN CASE OF EMERGENCIES
-          fs.writeFile("lastInserted.txt", `${variables.page}`, (err) => {
+          fs.appendFile("lastInserted.txt", `\n${variables.page}`, (err) => {
             if (err) {
               colorize_error(`[iall-fs] ${err}`);
             }
