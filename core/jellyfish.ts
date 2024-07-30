@@ -20,7 +20,11 @@ class Jellyfish {
    * @param {string} anilistId - Anilist ID.
    * @returns {Promise<any>} The result of the save operation or error.
    */
-  static async singleInsertById(anilistId: string): Promise<any> {
+  static async singleInsertById(
+    anilistId: string,
+    absoluteGogoSubId?: string,
+    absoluteGogoDubId?: string
+  ): Promise<any> {
     const isAlreadyAdded = await Anime.findOne({ anilistId });
     if (anilistId && !isAlreadyAdded) {
       colorize_info(`[${anilistId}] initiated...`);
@@ -82,14 +86,18 @@ class Jellyfish {
         );
 
         // GET GOGOID > GOGO_EPISODES > GOGO_EPISODE_SOURCES
-        let gogo_subId: string | undefined = episodes?.[0]?.id
+        let gogo_subId: string | undefined = absoluteGogoSubId
+          ? absoluteGogoSubId
+          : episodes?.[0]?.id
           ? String(episodes[0].id).split("-").slice(0, -2).join("-")
           : undefined;
         // If dub is included, remove it for sub
         if (gogo_subId && gogo_subId.includes("-dub")) {
           gogo_subId = gogo_subId.split("-dub").slice(0, -1).join("");
         }
-        const gogo_dubId: string = replaceMultipleHyphens(`${gogo_subId}-dub`);
+        const gogo_dubId: string = absoluteGogoDubId
+          ? absoluteGogoDubId
+          : replaceMultipleHyphens(`${gogo_subId}-dub`);
         colorize_info(`[subId] : ${gogo_subId}`);
         colorize_info(`[dubId] : ${gogo_dubId}`);
         // STORAGE
@@ -172,7 +180,7 @@ class Jellyfish {
           }
           colorize_success(`[dub] [${anilistId}] ${dub_episodes.length}`);
         } catch (error) {
-          colorize_error(`[dub] not found`);
+          colorize_error(`[dub] not found, ${error}`);
         }
 
         // SAVE ANIME DETAILS TO THE DATABASE

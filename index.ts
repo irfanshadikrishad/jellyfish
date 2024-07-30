@@ -30,10 +30,16 @@ try {
     "--u0": Boolean,
     "--ud": String,
     "--stats": Boolean,
+    "--subId": String,
+    "--dubId": String,
   });
   if (args["--i1"]) {
     await database();
-    await singleInsertById(args["--i1"])
+    await singleInsertById(
+      args["--i1"],
+      args["--subId"] && args["--subId"],
+      args["--dubId"] && args["--dubId"]
+    )
       .then((data) => {
         if (data?._id) {
           colorize_mark2(
