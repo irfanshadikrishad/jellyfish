@@ -12,6 +12,7 @@ import { usage } from "./utils/usage";
 const {
   singleInsertById,
   insertAllAnimes,
+  insertAllByName,
   deleteByAnilistId,
   updateAllOngoing,
   updateDubEpisodesById,
@@ -23,6 +24,7 @@ try {
   const args = arg({
     "--i1": String,
     "--iall": Number,
+    "--iname": String,
     "--r1": Number,
     "--r0": Boolean,
     "--u0": Boolean,
@@ -156,6 +158,20 @@ try {
       })
       .catch((error) => {
         colorize_error(error);
+      });
+    process.exit(0);
+  } else if (args["--iname"]) {
+    await database();
+    await insertAllByName(args["--iname"])
+      .then((count) => {
+        if (count) {
+          colorize_mark2(`[iname] ${count} inserted.`);
+        } else {
+          colorize_mark2(`[iname] 0 inserted.`);
+        }
+      })
+      .catch((error) => {
+        colorize_error(`[iname] ${error}`);
       });
     process.exit(0);
   } else {

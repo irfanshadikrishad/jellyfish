@@ -547,7 +547,7 @@ class Jellyfish {
           colorize_info(
             `[${variables.page}/${response?.data?.Page?.pageInfo?.total}] Interval initiated...`
           );
-          await new Promise((resolve) => setTimeout(resolve, 2500));
+          await new Promise((resolve) => setTimeout(resolve, 10000));
           request_Count = 0;
           colorize_info(
             `[${variables.page}/${response?.data?.Page?.pageInfo?.total}] Interval reset...`
@@ -685,6 +685,62 @@ class Jellyfish {
       };
     } catch (error) {
       throw new Error(`[stats] ${error}`);
+    }
+  }
+
+  /**
+   * To insert all anime by their name
+   * @param name - name of the anime
+   * @returns total inserted anime
+   */
+  static async insertAllByName(name: string): Promise<any> {
+    try {
+      let page = 1;
+      let loop = true;
+      let animeInserted = 0;
+      while (loop) {
+        const anime = await anilist.search(name, page, 1);
+        if (!anime.results[0]?.id || !anime.hasNextPage) {
+          return animeInserted;
+        }
+        // Attempt to save the results individually
+        try {
+          const saved_Anime = await Jellyfish.singleInsertById(
+            anime.results[0].id
+          );
+          // Check if its Saved
+          if (saved_Anime && saved_Anime.anilistId) {
+            animeInserted++;
+            colorize_mark2(
+              `[${animeInserted}] [${
+                saved_Anime.title.english
+                  ? saved_Anime.title.english
+                  : saved_Anime.title.romaji
+              }] inserted.`
+            );
+          }
+          // Exiting the operation
+          if (!anime.hasNextPage) {
+            loop = false;
+            return animeInserted;
+          } else {
+            // Can setInterval here
+            page++;
+          }
+        } catch (error) {
+          colorize_error(`[iname] ${error}`);
+          // Exiting the operation
+          if (!anime.hasNextPage) {
+            loop = false;
+            return animeInserted;
+          } else {
+            // Can setInterval here
+            page++;
+          }
+        }
+      }
+    } catch (error) {
+      throw new Error(`${error}`);
     }
   }
 }
