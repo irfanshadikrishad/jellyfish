@@ -138,7 +138,7 @@ class Jellyfish {
               );
             }
           } catch (error) {
-            colorize_error(`[sub] not found`);
+            colorize_error(`[sub] not-found.`);
           }
         }
         colorize_success(`[sub] [${anilistId}] ${sub_episodes.length}`);
@@ -180,7 +180,7 @@ class Jellyfish {
           }
           colorize_success(`[dub] [${anilistId}] ${dub_episodes.length}`);
         } catch (error) {
-          colorize_error(`[dub] not found, ${error}`);
+          colorize_error(`[dub] not-found.`);
         }
 
         // SAVE ANIME DETAILS TO THE DATABASE
@@ -234,7 +234,7 @@ class Jellyfish {
           }
         }
       } catch (error) {
-        colorize_error(`[${anilistId}] not found. ${error}`);
+        colorize_error(`[${anilistId}] not found.`);
       }
     } else {
       colorize_success(
@@ -279,10 +279,9 @@ class Jellyfish {
   static async updateAllOngoing(): Promise<any> {
     try {
       let episodesInserted = 0;
+      let fakeIndex = 1;
       const getAllOngoingAnimes = await Anime.find({ status: "Ongoing" });
-      colorize_success(
-        `[u0] ${getAllOngoingAnimes.length} ongoing anime found.`
-      );
+      colorize_success(`[u0] ${getAllOngoingAnimes.length} ongoing currently.`);
 
       // Now need to traverse over all ongoing and check if it's outdated
       for (const ongoing of getAllOngoingAnimes) {
@@ -311,7 +310,7 @@ class Jellyfish {
               );
               if (storin) {
                 colorize_success(
-                  `[u0] [sub] [${ongoing.anilistId}] +${
+                  `[u0] [${fakeIndex}] [sub] [${ongoing.anilistId}] +${
                     latestEpisodes &&
                     latestEpisodes?.length - alreadyAddedEpisodes?.length
                   } episodes.`
@@ -323,10 +322,14 @@ class Jellyfish {
                 episodesInserted += difference;
               }
             } else {
-              colorize_info(`[u0] [sub] [${ongoing.anilistId}] up-to-date`);
+              colorize_info(
+                `[u0] [${fakeIndex}] [sub] [${ongoing.anilistId}] up-to-date.`
+              );
             }
           } catch (error) {
-            colorize_error(`[u0] [sub] [${ongoing.anilistId}] ${error}`);
+            colorize_error(
+              `[u0] [${fakeIndex}] [sub] [${ongoing.anilistId}] ${error}`
+            );
           }
         }
         if (gogoDubId) {
@@ -345,7 +348,7 @@ class Jellyfish {
               );
               if (storin) {
                 colorize_success(
-                  `[u0] [dub] [${ongoing.anilistId}] +${
+                  `[u0] [${fakeIndex}] [dub] [${ongoing.anilistId}] +${
                     latestEpisodes &&
                     latestEpisodes?.length - alreadyAddedEpisodes?.length
                   } episodes.`
@@ -357,11 +360,13 @@ class Jellyfish {
                 episodesInserted += difference;
               }
             } else {
-              colorize_info(`[u0] [dub] [${ongoing.anilistId}] up-to-date`);
+              colorize_info(
+                `[u0] [${fakeIndex}] [dub] [${ongoing.anilistId}] up-to-date.`
+              );
             }
           } catch (error) {
             colorize_error(
-              `[u0] [dub] [${ongoing.anilistId}] no-dubs-available`
+              `[u0] [${fakeIndex}] [dub] [${ongoing.anilistId}] no-dubs-available`
             );
           }
         }
@@ -381,23 +386,29 @@ class Jellyfish {
             );
             if (update_Status) {
               colorize_success(
-                `[u0] [${ongoing.anilistId}] [status] ${ongoing?.status} => ${anilistSubInfo?.status}`
+                `[u0] [${fakeIndex}] [${ongoing.anilistId}] [status] ${ongoing?.status} => ${anilistSubInfo?.status}`
               );
             } else {
               colorize_error(
-                `[u0] [${ongoing.anilistId}] [status] update-error.`
+                `[u0] [${fakeIndex}] [${ongoing.anilistId}] [status] update-error.`
               );
             }
           } else {
-            colorize_info(`[u0] [${ongoing.anilistId}] [status] up-to-date.`);
+            colorize_info(
+              `[u0] [${fakeIndex}] [${ongoing.anilistId}] [status] up-to-date.`
+            );
           }
         } catch (error) {
-          colorize_error(`[u0] [${ongoing.anilistId}] [status] ${error}`);
+          colorize_error(
+            `[u0] [${fakeIndex}] [${ongoing.anilistId}] [status] ${error}`
+          );
         }
+        // Updating Index Count
+        fakeIndex++;
       }
       return episodesInserted;
     } catch (error) {
-      // colorize_error(`[u0] ${error}`);
+      // colorize_error(`[u0] [${fakeIndex}] ${error}`);
       throw new Error(`[u0] ${error}`);
     }
   }
@@ -555,7 +566,7 @@ class Jellyfish {
           colorize_info(
             `[${variables.page}/${response?.data?.Page?.pageInfo?.total}] Interval initiated...`
           );
-          await new Promise((resolve) => setTimeout(resolve, 10000));
+          await new Promise((resolve) => setTimeout(resolve, 2000));
           request_Count = 0;
           colorize_info(
             `[${variables.page}/${response?.data?.Page?.pageInfo?.total}] Interval reset...`
