@@ -1,10 +1,12 @@
 import { Jellyfish } from "../core/jellyfish";
 import database from "../database/database";
-import { colorize_mark2 } from "../utils/colorize";
+import { colorize_info, colorize_mark2 } from "../utils/colorize";
 import { sendMail } from "../utils/workers";
 
+colorize_info(`running.`);
 setInterval(async () => {
   try {
+    colorize_info(`Initiating ongoing updates...`);
     await database();
     await Jellyfish.updateAllOngoing()
       .then((count) => {
