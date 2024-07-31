@@ -104,7 +104,7 @@ class Jellyfish {
         let sub_episodes: any[] = [];
         let dub_episodes: any[] = [];
         // GET SUB EPISODES
-        if (gogo_subId) {
+        if (gogo_subId && !gogo_subId.includes("undefined")) {
           try {
             const gogo_Info = await gogoanime.fetchAnimeInfo(gogo_subId);
             const gogo_subEpisodes = gogo_Info?.episodes;
@@ -140,12 +140,14 @@ class Jellyfish {
           } catch (error) {
             colorize_error(`[sub] not-found.`);
           }
+        } else {
+          colorize_error(`[sub] subId undefined.`);
         }
         colorize_success(`[sub] [${anilistId}] ${sub_episodes.length}`);
 
         try {
           // GET DUB EPISODES
-          if (gogo_dubId) {
+          if (gogo_dubId && !gogo_dubId.includes("undefined")) {
             const gogo_Info = await gogoanime.fetchAnimeInfo(gogo_dubId);
             const gogo_dubEpisodes = gogo_Info?.episodes;
 
@@ -177,6 +179,8 @@ class Jellyfish {
                 })
               );
             }
+          } else {
+            colorize_error(`[dub] dubId undefined.`);
           }
           colorize_success(`[dub] [${anilistId}] ${dub_episodes.length}`);
         } catch (error) {
@@ -494,7 +498,7 @@ class Jellyfish {
             hasNextPage
             perPage
           }
-          media(type: ANIME, sort: POPULARITY_DESC) {
+          media(type: ANIME) {
             id
           }
         }
