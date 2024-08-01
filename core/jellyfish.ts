@@ -10,6 +10,7 @@ import {
   colorize_error,
   colorize_info,
   colorize_mark2,
+  colorize_mark4,
   colorize_success,
 } from "../utils/colorize";
 import { replaceMultipleHyphens } from "../utils/workers";
@@ -220,10 +221,10 @@ class Jellyfish {
           typeof title === "object" &&
           title !== null
         ) {
-          colorize_error(
-            `[${title?.english ? title.english : title?.romaji}] [sub] ${
+          colorize_mark4(
+            `[skip] [${title?.english ? title.english : title?.romaji}] [sub] ${
               sub_episodes.length
-            } [dub] ${dub_episodes.length} • Aborting insertion...`
+            } [dub] ${dub_episodes.length} `
           );
         } else if (sub_episodes.length === 0 && dub_episodes.length === 0) {
           colorize_error(
@@ -722,12 +723,14 @@ class Jellyfish {
       let loop = true;
       let animeInserted = 0;
       while (loop) {
-        const anime = await anilist.search(name, page, 1);
-        if (!anime.results[0]?.id || !anime.hasNextPage) {
-          return animeInserted;
-        }
-        // Attempt to save the results individually
+        let anime = null;
         try {
+          anime = await anilist.search(name, page, 1);
+
+          if (!anime.results[0]?.id || !anime.hasNextPage) {
+            return animeInserted;
+          }
+
           const saved_Anime = await Jellyfish.singleInsertById(
             anime.results[0].id
           );
@@ -753,7 +756,7 @@ class Jellyfish {
         } catch (error) {
           colorize_error(`[iname] ${error}`);
           // Exiting the operation
-          if (!anime.hasNextPage) {
+          if (!anime?.hasNextPage) {
             loop = false;
             return animeInserted;
           } else {
