@@ -17,5 +17,8 @@
     "mongoose": "^8.5.2",
     "node-fetch": "^3.3.2",
     "nodemailer": "^6.9.14"
+  },
+  "scripts": {
+    "update": "bun run update/index.ts"
   }
 }
