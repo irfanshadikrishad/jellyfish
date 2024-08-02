@@ -43,8 +43,8 @@ async function sendMail(count: string, error?: string) {
     html: `Hello! 👋
     <br><br>
     Update ongoing is completed at ${getCurrentDateAndTime()}</b>.
-    <br>
-    ${error ? error : `Total ${count} episodes added.`}
+    <br><br>
+    ${error ? error : `<b>Total ${count} episodes added.</b>`}
     <br><br>
     In the meantime feel free to subscribe my <a href='https://youtube.com/@irfanshadikrishad'>youtube</a> channel.`,
   };
@@ -58,4 +58,13 @@ async function sendMail(count: string, error?: string) {
   });
 }
 
-export { replaceMultipleHyphens, sendMail };
+function getRemainingTime(lastExecutionTime: any) {
+  const currentTime = Date.now();
+  const nextExecutionTime = lastExecutionTime + 10800000;
+  const remainingTime = nextExecutionTime - currentTime;
+
+  // Return remaining time in minutes
+  return Math.floor(remainingTime / 60000);
+}
+
+export { replaceMultipleHyphens, sendMail, getRemainingTime };
