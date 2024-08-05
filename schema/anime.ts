@@ -46,24 +46,7 @@ const animeSchema = new Schema(
     studios: [String],
     season: String,
     release_date: String,
-    recommendations: [
-      {
-        animeId: String,
-        malId: String,
-        title: {
-          romaji: String,
-          english: String,
-          native: String,
-          userPreferred: String,
-        },
-        status: String,
-        episodes: Number,
-        poster: String,
-        cover: String,
-        rating: Number,
-        format: String,
-      },
-    ],
+    recommendations: [String],
   },
   { timestamps: true }
 );
