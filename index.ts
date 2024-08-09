@@ -43,9 +43,11 @@ try {
       .then((data) => {
         if (data?._id) {
           colorize_mark2(
-            `[${
+            `\n[${
               data?.title?.english ? data?.title?.english : data?.title?.romaji
-            }] [${data?._id}] inserted.`
+            }] [${data?.sub_episodes?.length}/${data?.dub_episodes?.length}/${
+              data?.totalEpisodes
+            }] inserted.`
           );
         }
       })
@@ -68,9 +70,9 @@ try {
     await deleteByAnilistId(args["--r1"])
       .then((deleted) => {
         if (deleted) {
-          colorize_mark2(`[${args["--r1"]}] deleted successfully.`);
+          colorize_mark2(`\n[${args["--r1"]}] deleted successfully.`);
         } else {
-          colorize_error(`[${args["--r1"]}] somethings went wrong.`);
+          colorize_error(`\n[${args["--r1"]}] somethings went wrong.`);
         }
       })
       .catch((error) => {
@@ -95,7 +97,7 @@ try {
     await database();
     await updateDubEpisodesById(args["--ud"])
       .then((data) => {
-        colorize_mark2(`${data}`);
+        colorize_mark2(`\n${data}`);
       })
       .catch((error) => {
         colorize_error(error);
@@ -160,7 +162,7 @@ try {
     await database();
     await remove_Zero()
       .then((count) => {
-        colorize_mark2(`[r0] ${count} anime(s) deleted.`);
+        colorize_mark2(`\n[r0] ${count} anime(s) deleted.`);
       })
       .catch((error) => {
         colorize_error(error);
@@ -171,13 +173,13 @@ try {
     await insertAllByName(args["--iname"])
       .then((count) => {
         if (count) {
-          colorize_mark2(`[iname] ${count} inserted.`);
+          colorize_mark2(`\n[iname] ${count} inserted.`);
         } else {
-          colorize_mark2(`[iname] 0 inserted.`);
+          colorize_mark2(`\n[iname] 0 inserted.`);
         }
       })
       .catch((error) => {
-        colorize_error(`[iname] ${error}`);
+        colorize_error(`\n[iname] ${error}`);
       });
     process.exit(0);
   } else {

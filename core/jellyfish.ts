@@ -210,20 +210,22 @@ class Jellyfish {
         colorize_error(`[${anilistId}] not found.`);
       }
     } else {
-      colorize_success(
-        `[${
+      colorize_mark2(
+        `\n[${
           isAlreadyAdded?.title?.english
             ? isAlreadyAdded?.title?.english
             : isAlreadyAdded?.title?.romaji
-        }] [${isAlreadyAdded?.anilistId}] [${
-          isAlreadyAdded?._id
-        }] already added.`
+        }] [${isAlreadyAdded?.sub_episodes?.length}/${
+          isAlreadyAdded?.dub_episodes?.length
+        }/${isAlreadyAdded?.totalEpisodes}] already added.`
       );
       return `[${
         isAlreadyAdded?.title?.english
           ? isAlreadyAdded?.title?.english
           : isAlreadyAdded?.title?.romaji
-      }] already added.`;
+      }] [${isAlreadyAdded?.sub_episodes?.length}/${
+        isAlreadyAdded?.dub_episodes?.length
+      }/${isAlreadyAdded?.totalEpisodes}] already added.`;
     }
   }
 
