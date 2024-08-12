@@ -7,6 +7,7 @@ import {
   colorize_error,
   colorize_mark,
   colorize_mark2,
+  colorize_info,
 } from "./utils/colorize";
 import { usage } from "./utils/usage";
 const {
@@ -18,6 +19,7 @@ const {
   updateDubEpisodesById,
   getStats,
   remove_Zero,
+  remove_nextAiringEpisode,
 } = Jellyfish;
 
 try {
@@ -27,6 +29,7 @@ try {
     "--iname": String,
     "--r1": Number,
     "--r0": Boolean,
+    "--rair": Boolean,
     "--u0": Boolean,
     "--ud": String,
     "--stats": Boolean,
@@ -182,6 +185,17 @@ try {
         colorize_error(`\n[iname] ${error}`);
       });
     process.exit(0);
+  } else if (args["--rair"]) {
+    colorize_info(`[rair] deprecated`);
+    // await database();
+    // await remove_nextAiringEpisode()
+    //   .then((count) => {
+    //     colorize_mark2(`\n[rair] ${count} deleted`);
+    //   })
+    //   .catch((err) => {
+    //     colorize_error(`[rair] ${err}`);
+    //   });
+    // process.exit(0);
   } else {
     usage();
     process.exit(0);
