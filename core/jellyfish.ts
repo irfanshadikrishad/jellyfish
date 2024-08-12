@@ -256,7 +256,7 @@ class Jellyfish {
       let episodesInserted = 0;
       let fakeIndex = 1;
       const getAllOngoingAnimes = await Anime.find({ status: "Ongoing" });
-      colorize_success(`[u0] ${getAllOngoingAnimes.length} ongoing currently.`);
+      colorize_mark2(`\n[u0] ${getAllOngoingAnimes.length} ongoing currently.`);
 
       // Now need to traverse over all ongoing and check if it's outdated
       for (const ongoing of getAllOngoingAnimes) {
@@ -280,7 +280,10 @@ class Jellyfish {
                 {
                   _id: ongoing._id,
                 },
-                { sub_episodes: latestEpisodes },
+                {
+                  sub_episodes: latestEpisodes,
+                  nextAiringEpisode: gogoSubInfo.nextAiringEpisode,
+                },
                 { new: true }
               );
               if (storin) {
@@ -348,20 +351,20 @@ class Jellyfish {
         // STATUS UPDATE FROM ONGOING TO FINISHED | ELSE.
         // We need subInfo, so its better to be inside sub section
         try {
-          const anilistSubInfo = await anilist.fetchAnimeInfo(
+          const { status, nextAiringEpisode } = await anilist.fetchAnimeInfo(
             ongoing.anilistId
           );
-          if (anilistSubInfo?.status !== ongoing?.status) {
+          if (status !== ongoing?.status) {
             const update_Status = await Anime.findByIdAndUpdate(
               {
                 _id: ongoing._id,
               },
-              { status: anilistSubInfo.status },
+              { status: status, nextAiringEpisode: nextAiringEpisode },
               { new: true }
             );
             if (update_Status) {
               colorize_success(
-                `[u0] [${fakeIndex}] [${ongoing.anilistId}] [status] ${ongoing?.status} => ${anilistSubInfo?.status}`
+                `[u0] [${fakeIndex}] [${ongoing.anilistId}] [status] ${ongoing?.status} => ${status}`
               );
             } else {
               colorize_error(
@@ -734,6 +737,25 @@ class Jellyfish {
             page++;
           }
         }
+      }
+    } catch (error) {
+      throw new Error(`${error}`);
+    }
+  }
+
+  /**
+   * Removes nextAiringTime from all animes
+   */
+  static async remove_nextAiringEpisode(): Promise<any> {
+    try {
+      const remove = await Anime.updateMany(
+        {},
+        { $unset: { nextAiringEpisode: {} } }
+      );
+      if (remove.modifiedCount) {
+        return remove.modifiedCount;
+      } else {
+        return 0;
       }
     } catch (error) {
       throw new Error(`${error}`);

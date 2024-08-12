@@ -35,13 +35,11 @@ const animeSchema = new Schema(
     genres: [String],
     synonyms: [String],
     isAdult: String,
-    nextAiringEpisode: [
-      {
-        airingTime: Number,
-        timeUntilAiring: Number,
-        episode: Number,
-      },
-    ],
+    nextAiringEpisode: {
+      airingTime: Number,
+      timeUntilAiring: Number,
+      episode: Number,
+    },
     totalEpisodes: Number,
     studios: [String],
     season: String,
