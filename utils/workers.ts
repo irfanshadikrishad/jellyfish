@@ -58,13 +58,4 @@ async function sendMail(count: string, error?: string) {
   });
 }
 
-function getRemainingTime(lastExecutionTime: any) {
-  const currentTime = Date.now();
-  const nextExecutionTime = lastExecutionTime + 10800000;
-  const remainingTime = nextExecutionTime - currentTime;
-
-  // Return remaining time in minutes
-  return Math.floor(remainingTime / 60000);
-}
-
-export { replaceMultipleHyphens, sendMail, getRemainingTime };
+export { replaceMultipleHyphens, sendMail };
