@@ -1,24 +1,25 @@
-name: Run npm update every 6 hours
+name: Update animes
 
 on:
   schedule:
     - cron: "0 */6 * * *"
-  workflow_dispatch:
-    jobs:
-      update:
-        runs-on: ubuntu-latest
+  workflow_dispatch: # This allows manual triggering
 
-        steps:
-          - name: Checkout code
-            uses: actions/checkout@v3
+jobs:
+  update:
+    runs-on: ubuntu-latest
 
-          - name: Set up Node.js
-            uses: actions/setup-node@v3
-            with:
-              node-version: "18"
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-          - name: Install dependencies
-            run: npm install --force
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18"
 
-          - name: Update
-            run: npm run update
+      - name: Install dependencies
+        run: npm install --force
+
+      - name: Update
+        run: npm run update
