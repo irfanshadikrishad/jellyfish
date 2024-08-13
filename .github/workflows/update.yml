@@ -1,25 +1,14 @@
-name: Update animes
+name: Update request
 
 on:
   schedule:
-    - cron: "0 */6 * * *"
-  workflow_dispatch: # This allows manual triggering
+    - cron: "0 */3 * * *"
+  workflow_dispatch:
 
 jobs:
-  update:
+  send_request:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: "18"
-
-      - name: Install dependencies
-        run: npm install --force
-
-      - name: Update
-        run: npm run update
+      - name: Send GET request
+        run: curl -X GET "https://jellyfish-qw8x.onrender.com/update"
