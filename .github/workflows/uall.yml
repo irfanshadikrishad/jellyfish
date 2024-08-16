@@ -1,0 +1,14 @@
+name: Update all dubs
+
+on:
+  schedule:
+    - cron: "0 0 * * 5"
+  workflow_dispatch:
+
+jobs:
+  send_request:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Send GET request
+        run: curl -X GET "https://jellyfish-qw8x.onrender.com/update-all-dubs"

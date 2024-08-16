@@ -472,7 +472,7 @@ class Jellyfish {
             hasNextPage
             perPage
           }
-          media(type: ANIME, sort: START_DATE_DESC) {
+          media(type: ANIME, sort: TITLE_ENGLISH) {
             id
           }
         }
@@ -759,6 +759,69 @@ class Jellyfish {
       }
     } catch (error) {
       throw new Error(`${error}`);
+    }
+  }
+
+  /**
+   * Update all dubs from database
+   * @returns details
+   */
+  static async updateAllDubs(): Promise<{
+    updated: number;
+    episodes_added: number;
+  }> {
+    try {
+      let details = { updated: 0, episodes_added: 0 };
+      const animes = await Anime.find({}).sort({ airing_start: -1 });
+      for (const anime of animes) {
+        try {
+          const dubEpisodeId = anime.dub_episodes[0]?.id;
+          if (dubEpisodeId) {
+            const dubId = dubEpisodeId.split("-episode-")[0];
+            const gogoInfo = await gogoanime.fetchAnimeInfo(dubId);
+            if (
+              anime.dub_episodes?.length !== gogoInfo.episodes?.length &&
+              anime.anilistId !== "101918"
+            ) {
+              // update
+              const update = await Anime.findByIdAndUpdate(
+                { _id: anime._id },
+                {
+                  dub_episodes: gogoInfo.episodes,
+                },
+                { new: true }
+              );
+              if (update) {
+                details.updated++;
+                details.episodes_added +=
+                  Number(gogoInfo?.episodes?.length) -
+                  Number(anime?.dub_episodes?.length);
+                colorize_mark2(
+                  `\n[udall] [${
+                    anime?.title?.english
+                      ? anime?.title?.english
+                      : anime?.title?.romaji
+                  }] +${
+                    Number(gogoInfo?.episodes?.length) -
+                    Number(anime?.dub_episodes?.length)
+                  }`
+                );
+              }
+            }
+          }
+        } catch (error) {
+          colorize_error(
+            `\n[udall] [${
+              anime?.title?.english
+                ? anime?.title?.english
+                : anime?.title?.romaji
+            }] ${error}`
+          );
+        }
+      }
+      return details;
+    } catch (error) {
+      throw new Error(`[udall] ${error}`);
     }
   }
 }

@@ -20,6 +20,7 @@ const {
   getStats,
   remove_Zero,
   remove_nextAiringEpisode,
+  updateAllDubs,
 } = Jellyfish;
 
 try {
@@ -32,6 +33,7 @@ try {
     "--rair": Boolean,
     "--u0": Boolean,
     "--ud": String,
+    "--udall": Boolean,
     "--stats": Boolean,
     "--subId": String,
     "--dubId": String,
@@ -196,6 +198,19 @@ try {
     //     colorize_error(`[rair] ${err}`);
     //   });
     // process.exit(0);
+  } else if (args["--udall"]) {
+    await database();
+    await updateAllDubs()
+      .then((count) => {
+        if (count) {
+          colorize_mark2(`\nAnime Updated : ${count?.updated}`);
+          colorize_mark2(`\nEpisodes added: ${count?.episodes_added}`);
+        }
+      })
+      .catch((err) => {
+        colorize_error(`${err.message}`);
+      });
+    process.exit(0);
   } else {
     usage();
     process.exit(0);
