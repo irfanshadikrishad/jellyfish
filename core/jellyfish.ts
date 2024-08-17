@@ -774,9 +774,12 @@ class Jellyfish {
     episodes_added: number;
   }> {
     try {
+      let count = 0;
       let details = { updated: 0, episodes_added: 0 };
       const animes = await Anime.find({}).sort({ airing_start: -1 });
+      colorize_info(`\n[udall] initialiing.`);
       for (const anime of animes) {
+        count++;
         const { _id, title, anilistId, dub_episodes } = anime;
         try {
           const dubEpisodeId = dub_episodes[0]?.id;
@@ -801,19 +804,37 @@ class Jellyfish {
                   Number(gogoInfo?.episodes?.length) -
                   Number(anime?.dub_episodes?.length);
                 colorize_mark2(
-                  `\n[udall] [${
+                  `[udall] [${
                     title?.english ? title?.english : title?.romaji
                   }] +${
                     Number(gogoInfo?.episodes?.length) -
                     Number(dub_episodes?.length)
                   }`
                 );
+              } else {
+                colorize_error(
+                  `[udall] [${count}] [${
+                    title?.english ? title?.english : title?.romaji
+                  }] update failed.`
+                );
               }
+            } else {
+              colorize_info(
+                `[udall] [${count}] [${
+                  title?.english ? title?.english : title?.romaji
+                }] up-to-date.`
+              );
             }
+          } else {
+            colorize_info(
+              `[udall] [${count}] [${
+                title?.english ? title?.english : title?.romaji
+              }] no-dub-id.`
+            );
           }
         } catch (error) {
           colorize_error(
-            `\n[udall] [${
+            `[udall] [${count}] [${
               title?.english ? title?.english : title?.romaji
             }] ${error}`
           );
