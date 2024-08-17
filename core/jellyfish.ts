@@ -276,13 +276,16 @@ class Jellyfish {
             const alreadyAddedEpisodes = ongoing?.sub_episodes;
 
             if (latestEpisodes?.length !== alreadyAddedEpisodes.length) {
+              const { nextAiringEpisode } = await anilist.fetchAnimeInfo(
+                ongoing.anilistId
+              );
               const storin = await Anime.findByIdAndUpdate(
                 {
                   _id: ongoing._id,
                 },
                 {
                   sub_episodes: latestEpisodes,
-                  nextAiringEpisode: gogoSubInfo.nextAiringEpisode,
+                  nextAiringEpisode: nextAiringEpisode,
                 },
                 { new: true }
               );
@@ -748,12 +751,12 @@ class Jellyfish {
    */
   static async remove_nextAiringEpisode(): Promise<any> {
     try {
-      const remove = await Anime.updateMany(
+      const { modifiedCount } = await Anime.updateMany(
         {},
         { $unset: { nextAiringEpisode: {} } }
       );
-      if (remove.modifiedCount) {
-        return remove.modifiedCount;
+      if (modifiedCount) {
+        return modifiedCount;
       } else {
         return 0;
       }
@@ -774,18 +777,19 @@ class Jellyfish {
       let details = { updated: 0, episodes_added: 0 };
       const animes = await Anime.find({}).sort({ airing_start: -1 });
       for (const anime of animes) {
+        const { _id, title, anilistId, dub_episodes } = anime;
         try {
-          const dubEpisodeId = anime.dub_episodes[0]?.id;
+          const dubEpisodeId = dub_episodes[0]?.id;
           if (dubEpisodeId) {
             const dubId = dubEpisodeId.split("-episode-")[0];
             const gogoInfo = await gogoanime.fetchAnimeInfo(dubId);
             if (
-              anime.dub_episodes?.length !== gogoInfo.episodes?.length &&
-              anime.anilistId !== "101918"
+              dub_episodes?.length !== gogoInfo.episodes?.length &&
+              anilistId !== "101918"
             ) {
               // update
               const update = await Anime.findByIdAndUpdate(
-                { _id: anime._id },
+                { _id: _id },
                 {
                   dub_episodes: gogoInfo.episodes,
                 },
@@ -798,12 +802,10 @@ class Jellyfish {
                   Number(anime?.dub_episodes?.length);
                 colorize_mark2(
                   `\n[udall] [${
-                    anime?.title?.english
-                      ? anime?.title?.english
-                      : anime?.title?.romaji
+                    title?.english ? title?.english : title?.romaji
                   }] +${
                     Number(gogoInfo?.episodes?.length) -
-                    Number(anime?.dub_episodes?.length)
+                    Number(dub_episodes?.length)
                   }`
                 );
               }
@@ -812,9 +814,7 @@ class Jellyfish {
         } catch (error) {
           colorize_error(
             `\n[udall] [${
-              anime?.title?.english
-                ? anime?.title?.english
-                : anime?.title?.romaji
+              title?.english ? title?.english : title?.romaji
             }] ${error}`
           );
         }

@@ -10,6 +10,7 @@ const usage = () => {
   colorize_info(`--r1 [anilistId]       • Remove anime by anilistId.`);
   colorize_info(`--u0                   • Update all ongoing animes.`);
   colorize_info(`--ud [anilistId]       • Update dub episodes by anilistId.`);
+  colorize_info(`--udall                • Update all dubs from database.`);
   colorize_info(`--stats                • Get statistics from database.`);
 };
 

@@ -1,5 +1,5 @@
 import { config } from "dotenv";
-import { colorize_error, colorize_info } from "./colorize";
+import { colorize_error } from "./colorize";
 import nodemailer from "nodemailer";
 
 config({ path: "../.env" });
@@ -13,7 +13,7 @@ function getCurrentDateAndTime() {
   const now = new Date();
 
   const day = now.getDate().toString().padStart(2, "0");
-  const month = (now.getMonth() + 1).toString().padStart(2, "0"); // Months are zero-indexed
+  const month = (now.getMonth() + 1).toString().padStart(2, "0");
   const year = now.getFullYear();
 
   let hours = now.getHours();
@@ -21,7 +21,7 @@ function getCurrentDateAndTime() {
 
   const ampm = hours >= 12 ? "PM" : "AM";
   hours = hours % 12;
-  hours = hours ? hours : 12; // The hour '0' should be '12'
+  hours = hours ? hours : 12;
   const formattedHours = hours.toString().padStart(2, "0");
 
   return `${day}/${month}/${year} at ${formattedHours}:${minutes}${ampm}`;
