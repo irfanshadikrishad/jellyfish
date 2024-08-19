@@ -845,6 +845,25 @@ class Jellyfish {
       throw new Error(`[udall] ${error}`);
     }
   }
+
+  static async distinct(): Promise<void> {
+    try {
+      const origin = await Anime.distinct("origin");
+      colorize_mark2(`\nOrigin`);
+      console.log(origin);
+      const status = await Anime.distinct("status");
+      colorize_mark2(`Status`);
+      console.log(status);
+      const format = await Anime.distinct("format");
+      colorize_mark2(`Format`);
+      console.log(format);
+      const season = await Anime.distinct("season");
+      colorize_mark2(`Season`);
+      console.log(season);
+    } catch (error) {
+      throw new Error(`${error}`);
+    }
+  }
 }
 
 export { Jellyfish };
