@@ -846,6 +846,9 @@ class Jellyfish {
     }
   }
 
+  /**
+   * Get the distict values
+   */
   static async distinct(): Promise<void> {
     try {
       const origin = await Anime.distinct("origin");
@@ -860,6 +863,40 @@ class Jellyfish {
       const season = await Anime.distinct("season");
       colorize_mark2(`Season`);
       console.log(season);
+    } catch (error) {
+      throw new Error(`${error}`);
+    }
+  }
+
+  static async updateSeason(): Promise<any> {
+    try {
+      const nulls = await Anime.find({ season: null });
+      let updated = 0;
+      let count = 0;
+      colorize_info(`\n[${nulls.length}]`);
+      for (const nullz of nulls) {
+        const { season } = await anilist.fetchAnimeInfo(nullz.anilistId);
+        if (nullz.season !== season) {
+          const update = await Anime.findByIdAndUpdate(
+            { _id: nullz._id },
+            { season: season },
+            { new: true }
+          );
+          if (update) {
+            colorize_mark2(
+              `[${count}] [${nullz.anilistId}] [${update.season}]`
+            );
+            updated++;
+          }
+        } else {
+          // Should not be the case
+          colorize_info(`[us] [${nullz.anilistId}] already up-to-date.`);
+        }
+        count++;
+        colorize_info(`interval...`);
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+      }
+      return updated;
     } catch (error) {
       throw new Error(`${error}`);
     }

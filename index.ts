@@ -22,6 +22,7 @@ const {
   remove_nextAiringEpisode,
   updateAllDubs,
   distinct,
+  updateSeason,
 } = Jellyfish;
 
 try {
@@ -39,6 +40,7 @@ try {
     "--subId": String,
     "--dubId": String,
     "--distinct": Boolean,
+    "--us": Boolean,
   });
   if (args["--i1"]) {
     await database();
@@ -219,6 +221,16 @@ try {
       .then(() => {})
       .catch((error) => {
         colorize_error(`[distinct] ${error}`);
+      });
+    process.exit(0);
+  } else if (args["--us"]) {
+    await database();
+    await updateSeason()
+      .then((count) => {
+        colorize_mark2(`\n${count} status changed.`);
+      })
+      .catch((err) => {
+        colorize_error(`[us] ${err}`);
       });
     process.exit(0);
   } else {
