@@ -2,7 +2,7 @@ name: Update request
 
 on:
   schedule:
-    - cron: "0 */3 * * *"
+    - cron: "0 */6 * * *"
   workflow_dispatch:
 
 jobs:
@@ -11,4 +11,4 @@ jobs:
 
     steps:
       - name: Send GET request
-        run: curl -X GET "https://jellyfish-qw8x.onrender.com/update"
+        run: curl -X GET "https://jellyfish-10r6.onrender.com/update"

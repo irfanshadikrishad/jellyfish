@@ -3,10 +3,10 @@
   "module": "index.ts",
   "type": "module",
   "devDependencies": {
-    "@types/bun": "^1.1.6",
+    "@types/bun": "^1.1.8",
     "@types/express": "^4.17.21",
     "@types/nodemailer": "^6.4.15",
-    "bun": "^1.1.24"
+    "bun": "^1.1.26"
   },
   "peerDependencies": {
     "typescript": "^5.5.4"
@@ -17,7 +17,7 @@
     "chalk": "^5.3.0",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
-    "mongoose": "^8.5.3",
+    "mongoose": "^8.5.4",
     "node-fetch": "^3.3.2",
     "nodemailer": "^6.9.14"
   },

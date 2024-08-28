@@ -386,10 +386,12 @@ class Jellyfish {
         }
         // Updating Index Count
         fakeIndex++;
+
+        // bypass rate-limit by waiting
+        await new Promise((resolve) => setTimeout(resolve, 5000));
       }
       return episodesInserted;
     } catch (error) {
-      // colorize_error(`[u0] [${fakeIndex}] ${error}`);
       throw new Error(`[u0] ${error}`);
     }
   }
@@ -475,7 +477,7 @@ class Jellyfish {
             hasNextPage
             perPage
           }
-          media(type: ANIME, sort: TITLE_ENGLISH) {
+          media(type: ANIME, sort: START_DATE_DESC, status_not: NOT_YET_RELEASED) {
             id
           }
         }
@@ -547,7 +549,7 @@ class Jellyfish {
           colorize_info(
             `[${variables.page}/${response?.data?.Page?.pageInfo?.total}] Interval initiated...`
           );
-          await new Promise((resolve) => setTimeout(resolve, 2000));
+          await new Promise((resolve) => setTimeout(resolve, 3000));
           request_Count = 0;
           colorize_info(
             `[${variables.page}/${response?.data?.Page?.pageInfo?.total}] Interval reset...`
@@ -863,6 +865,12 @@ class Jellyfish {
       const season = await Anime.distinct("season");
       colorize_mark2(`Season`);
       console.log(season);
+      const genres = await Anime.distinct("genres");
+      colorize_mark2(`Genres`);
+      console.log(genres);
+      const year = await Anime.distinct("airing_start.year");
+      colorize_mark2(`Year`);
+      console.log(year);
     } catch (error) {
       throw new Error(`${error}`);
     }
