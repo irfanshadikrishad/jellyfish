@@ -547,12 +547,12 @@ class Jellyfish {
         // Counter to bypass rate-limit
         if (request_Count >= 1) {
           colorize_info(
-            `[${variables.page}/${response?.data?.Page?.pageInfo?.total}] Interval initiated...`
+            `[${animeInserted}/${variables.page}/${response?.data?.Page?.pageInfo?.total}] Interval initiated...`
           );
           await new Promise((resolve) => setTimeout(resolve, 3000));
           request_Count = 0;
           colorize_info(
-            `[${variables.page}/${response?.data?.Page?.pageInfo?.total}] Interval reset...`
+            `[${animeInserted}/${variables.page}/${response?.data?.Page?.pageInfo?.total}] Interval reset...`
           );
           // SAVE THE LAST INSERTED PAGE NUMBER, IN CASE OF EMERGENCIES
           fs.appendFile("logs.txt", `\n${variables.page}`, (err) => {
