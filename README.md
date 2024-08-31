@@ -2,7 +2,7 @@
 
 CLI tool to scrape and store anime(s) in your own mongodb database.
 
-To install dependencies:
+#### To install dependencies:
 
 ```bash
 bun install
