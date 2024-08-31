@@ -35,7 +35,7 @@ try {
     "--rair": Boolean,
     "--u0": Boolean,
     "--ud": String,
-    "--udall": Boolean,
+    "--udall": Number,
     "--stats": Boolean,
     "--subId": String,
     "--dubId": String,
@@ -204,7 +204,7 @@ try {
     // process.exit(0);
   } else if (args["--udall"]) {
     await database();
-    await updateAllDubs()
+    await updateAllDubs(args["--udall"])
       .then((count) => {
         if (count) {
           colorize_mark2(`\nAnime Updated : ${count?.updated}`);

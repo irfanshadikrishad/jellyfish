@@ -771,16 +771,16 @@ class Jellyfish {
    * Update all dubs from database
    * @returns details
    */
-  static async updateAllDubs(): Promise<{
+  static async updateAllDubs(from?: number): Promise<{
     updated: number;
     episodes_added: number;
   }> {
     try {
-      let count = 0;
+      let count = from ? from : 0;
       let details = { updated: 0, episodes_added: 0 };
       const animes = await Anime.find({}).sort({ airing_start: -1 });
-      colorize_info(`\n[udall] initialiing.`);
-      for (const anime of animes) {
+      colorize_info(`\n[udall] [${animes.length}] initialiing.`);
+      for (const anime of animes.slice(from ? from : 0, animes.length)) {
         count++;
         const { _id, title, anilistId, dub_episodes } = anime;
         try {
@@ -790,7 +790,8 @@ class Jellyfish {
             const gogoInfo = await gogoanime.fetchAnimeInfo(dubId);
             if (
               dub_episodes?.length !== gogoInfo.episodes?.length &&
-              anilistId !== "101918"
+              anilistId !== "101918" &&
+              anilistId !== "12231"
             ) {
               // update
               const update = await Anime.findByIdAndUpdate(
@@ -815,28 +816,28 @@ class Jellyfish {
                 );
               } else {
                 colorize_error(
-                  `[udall] [${count}] [${
+                  `[udall] [${count}/${animes.length}] [${
                     title?.english ? title?.english : title?.romaji
                   }] update failed.`
                 );
               }
             } else {
               colorize_info(
-                `[udall] [${count}] [${
+                `[udall] [${count}/${animes.length}] [${
                   title?.english ? title?.english : title?.romaji
                 }] up-to-date.`
               );
             }
           } else {
             colorize_info(
-              `[udall] [${count}] [${
+              `[udall] [${count}/${animes.length}] [${
                 title?.english ? title?.english : title?.romaji
               }] no-dub-id.`
             );
           }
         } catch (error) {
           colorize_error(
-            `[udall] [${count}] [${
+            `[udall] [${count}/${animes.length}] [${
               title?.english ? title?.english : title?.romaji
             }] ${error}`
           );
@@ -876,6 +877,10 @@ class Jellyfish {
     }
   }
 
+  /**
+   * Update Seasons (eg: FALL, SPRING, SUMMER or WINTER)
+   * @returns total update count
+   */
   static async updateSeason(): Promise<any> {
     try {
       const nulls = await Anime.find({ season: null });

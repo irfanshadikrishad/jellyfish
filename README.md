@@ -1,4 +1,4 @@
-# jellyfish
+#### jellyfish
 
 CLI tool to scrape and store anime(s) in your own mongodb database.
 
@@ -8,21 +8,27 @@ To install dependencies:
 bun install
 ```
 
-Environment Variables:
+#### Environment Variables:
+
 Copy variable's from `.env.example` to `.env` and provide its values.
 
 ```bash
-MONGODB_URI=
+MONGODB_URI=(required)
+NODEMAILER=(optional)
+EMAIL_FROM=(optional)
+EMAIL_TO=(optional)
 ```
 
-Available Commands:
+#### Available Commands:
 
-```bash
-bun index.ts --i1 [anilistId]
-bun index.ts --iall [from_page]
-bun index.ts --r0
-bun index.ts --r1 [anilistId]
-bun index.ts --u0
-bun index.ts --ud [anilistId]
-bun index.ts --stats
-```
+| Commands                           | Usage                        |
+| ---------------------------------- | ---------------------------- |
+| `bun index.ts --i1 [anilistId]`    | Insert anime by anilistId.   |
+| `bun index.ts --iall [from_page]`  | Insert all animes.           |
+| `bun index.ts --r1 [anilistId]`    | Remove anime with anilistId. |
+| `bun index.ts --u0`                | Update all ongoing animes.   |
+| `bun index.ts --ud [anilistId]`    | Update dub by anilistId.     |
+| `bun index.ts --udall [from_page]` | Update all dubs.             |
+| `bun index.ts --stats`             | Server stats.                |
+
+_© Irfan Shadik Rishad_
