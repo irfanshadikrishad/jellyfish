@@ -251,15 +251,18 @@ class Jellyfish {
    * Update All Ongoing Animes
    * @returns total episodes added
    */
-  static async updateAllOngoing(): Promise<any> {
+  static async updateAllOngoing(from?: number): Promise<any> {
     try {
       let episodesInserted = 0;
-      let fakeIndex = 1;
+      let fakeIndex = from ? from : 1;
       const getAllOngoingAnimes = await Anime.find({ status: "Ongoing" });
       colorize_mark2(`\n[u0] ${getAllOngoingAnimes.length} ongoing currently.`);
 
       // Now need to traverse over all ongoing and check if it's outdated
-      for (const ongoing of getAllOngoingAnimes) {
+      for (const ongoing of getAllOngoingAnimes.slice(
+        from ? from : 0,
+        getAllOngoingAnimes.length
+      )) {
         // Getting gogoSubId && gogoDubId
         let gogoSubId = ongoing?.sub_episodes[0]?.id;
         let gogoDubIdParts = String(ongoing?.sub_episodes[0]?.id).split(
@@ -388,7 +391,7 @@ class Jellyfish {
         fakeIndex++;
 
         // bypass rate-limit by waiting
-        await new Promise((resolve) => setTimeout(resolve, 5000));
+        await new Promise((resolve) => setTimeout(resolve, 2500));
       }
       return episodesInserted;
     } catch (error) {
@@ -462,7 +465,7 @@ class Jellyfish {
    * @param {number} from page number
    * @returns {any}
    */
-  static async insertAllAnimes(from: number): Promise<any> {
+  static async insertAllAnimes(from?: number): Promise<any> {
     let loop = true;
     let request_Count = 0;
     let animeInserted = 0;
@@ -483,7 +486,7 @@ class Jellyfish {
         }
       }
     `;
-    let variables = { page: from, perPage: 1 };
+    let variables = { page: from ? from : 1, perPage: 1 };
 
     while (loop) {
       const request = await fetch(url, {
@@ -615,71 +618,28 @@ class Jellyfish {
    */
   static async getStats(): Promise<any> {
     try {
-      // TOTAL COUNT
       const total_Anime = await Anime.find({});
-      // colorize_info(`Anime      ${total_Anime.length}`);
-      // STATUS
       const ongoing = await Anime.find({ status: "Ongoing" });
-      // colorize_info(`Ongoing    ${ongoing.length}`);
-      // const completed = await Anime.find({ status: "Completed" });
-      // colorize_info(`Completed  ${completed.length}`);
-      // const hiatus = await Anime.find({ status: "Hiatus" });
-      // colorize_info(`Hiatus     ${hiatus.length}`);
-      // const cancelled = await Anime.find({ status: "Cancelled" });
-      // colorize_info(`Cancelled  ${cancelled.length}`);
-      // const not_yet_aired = await Anime.find({ status: "Not yet aired" });
-      // colorize_info(`Upcoming   ${not_yet_aired.length}`);
-      // const unknown = await Anime.find({ status: "Unknown" });
-      // colorize_info(`Unknown    ${unknown.length}`);
-      // Adult
       const adult = await Anime.find({ isAdult: true });
-      // colorize_info(`Adult     ${adult.length}`);
-      // // countryOfOrigin
-      const origin_japan = await Anime.find({ origin: "JP" }); // must have more origins?
-      // colorize_info(`Japan     ${origin_japan.length}`);
+      const origin_japan = await Anime.find({ origin: "JP" });
       const origin_southKorea = await Anime.find({ origin: "KR" });
       const origin_china = await Anime.find({ origin: "CN" });
-      // const origin_taiwan = await Anime.find({ origin: "TW" });
-      // // Format
       const tv = await Anime.find({ format: "TV" });
-      // colorize_info(`TV              ${tv.length}`);
       const tv_Shrot = await Anime.find({ format: "TV_SHORT" });
-      // colorize_info(`TV_SHORT        ${tv_Shrot.length}`);
       const movie = await Anime.find({ format: "MOVIE" });
-      // colorize_info(`Movie           ${movie.length}`);
       const special = await Anime.find({ format: "SPECIAL" });
-      // colorize_info(`Special         ${special.length}`);
       const ova = await Anime.find({ format: "OVA" });
-      // colorize_info(`OVA             ${ova.length}`);
       const ona = await Anime.find({ format: "ONA" });
-      // colorize_info(`ONA             ${ona.length}`);
-      // const music = await Anime.find({ format: "MUSIC" });
-      // colorize_info(`Music           ${music.length}`);
-      // const manga = await Anime.find({ format: "MANGA" });
-      // colorize_info(`Manga           ${manga.length}`);
-      // const novel = await Anime.find({ format: "NOVEL" });
-      // colorize_info(`Novel           ${novel.length}`);
-      // const one_Shot = await Anime.find({ format: "ONE_SHOT" });
-      // colorize_info(`OneShot         ${one_Shot.length}`);
 
       return {
         total_anime: total_Anime.length,
         status_ongoing: ongoing.length,
-        // status_completed: completed.length,
-        // status_hiatus: hiatus.length,
-        // status_cancelled: cancelled.length,
-        // status_notYetAired: not_yet_aired.length,
-        // status_unknown: unknown.length,
         format_TV: tv.length,
         format_TV_Short: tv_Shrot.length,
         format_Movie: movie.length,
         format_Special: special.length,
         format_OVA: ova.length,
         format_ONA: ona.length,
-        // format_Music: music.length,
-        // format_Manga: manga.length,
-        // format_Novel: novel.length,
-        // format_Oneshot: one_Shot.length,
         origin_japan: origin_japan.length,
         origin_southKorea: origin_southKorea.length,
         origin_china: origin_china.length,
