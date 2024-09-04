@@ -480,7 +480,7 @@ class Jellyfish {
             hasNextPage
             perPage
           }
-          media(type: ANIME, sort: START_DATE_DESC, status_not: NOT_YET_RELEASED) {
+          media(type: ANIME, sort: ID_DESC, status_not: NOT_YET_RELEASED) {
             id
           }
         }
