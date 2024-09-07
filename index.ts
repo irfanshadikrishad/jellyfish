@@ -35,7 +35,7 @@ try {
     "--rair": Boolean,
     "--u0": Boolean,
     "--ud": String,
-    "--udall": Number,
+    "--udall": Boolean,
     "--stats": Boolean,
     "--subId": String,
     "--dubId": String,
