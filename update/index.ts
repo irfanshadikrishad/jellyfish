@@ -27,11 +27,11 @@ async function update() {
   colorize_info(`Initiating ongoing updates...`);
   await database();
   await Jellyfish.updateAllOngoing()
-    .then((count) => {
-      if (count) {
-        colorize_mark2(`[update] +${count} episodes.`);
+    .then(({ episodesInserted, updatedAnimes }) => {
+      if (episodesInserted) {
+        colorize_mark2(`[update] +${episodesInserted} episodes.`);
         if (process.env.NODEMAILER) {
-          sendMail(`${count}`);
+          sendMail(`${episodesInserted}`, undefined, updatedAnimes);
         } else {
           colorize_info(`environment variable not found.`);
         }
