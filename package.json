@@ -19,7 +19,7 @@
     "express": "^4.19.2",
     "mongoose": "^8.5.4",
     "node-fetch": "^3.3.2",
-    "nodemailer": "^6.9.14"
+    "nodemailer": "^6.9.15"
   },
   "scripts": {
     "update": "bun run update/index.ts"
