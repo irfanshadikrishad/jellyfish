@@ -92,9 +92,19 @@ try {
   } else if (args["--u0"]) {
     await database();
     await updateAllOngoing(args["-f"] && args["-f"])
-      .then((count) => {
-        if (count) {
-          colorize_mark2(`\n[u0] ${count} episodes added.`);
+      .then(({ episodesInserted, updatedAnimes }) => {
+        if (episodesInserted) {
+          colorize_mark2(`\n[u0] ${episodesInserted} episodes added.`);
+          updatedAnimes.map(
+            (
+              { title }: { title: { english: string; romaji: string } },
+              idx: number
+            ) => {
+              colorize_success(
+                `${idx + 1}\t${title?.english ? title?.english : title?.romaji}`
+              );
+            }
+          );
         } else {
           colorize_mark2(`\n[u0] 0 episodes added.`);
         }

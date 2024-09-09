@@ -6,3 +6,7 @@ updates:
       prefix: "chore"
     schedule:
       interval: "weekly"
+    groups:
+      all-dependencies:
+        patterns:
+          - "*"

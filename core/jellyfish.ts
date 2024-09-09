@@ -13,7 +13,7 @@ import {
   colorize_mark4,
   colorize_success,
 } from "../utils/colorize";
-import { replaceMultipleHyphens } from "../utils/workers";
+import { replaceMultipleHyphens } from "../utils/helpers";
 
 class Jellyfish {
   /**
@@ -53,6 +53,10 @@ class Jellyfish {
           season,
           releaseDate,
           recommendations,
+          isLicensed,
+          color,
+          relations,
+          trailer,
         } = await anilist.fetchAnimeInfo(anilistId, false);
 
         // GET GOGOID > GOGO_EPISODES > GOGO_EPISODE_SOURCES
@@ -181,6 +185,11 @@ class Jellyfish {
           studios: studios,
           season: season,
           release_date: releaseDate,
+          recommendations: recommendations?.map(({ id }) => id),
+          isLicensed: isLicensed,
+          color: color,
+          relations: relations,
+          trailer: trailer ? trailer : [],
         });
 
         if (
@@ -207,7 +216,7 @@ class Jellyfish {
           }
         }
       } catch (error) {
-        colorize_error(`[${anilistId}] not found.`);
+        colorize_error(`[${anilistId}] not found. ${error}`);
       }
     } else {
       colorize_mark2(
@@ -249,10 +258,13 @@ class Jellyfish {
 
   /**
    * Update All Ongoing Animes
-   * @returns total episodes added
+   * @returns { episodesInserted, updatedAnimes }
    */
-  static async updateAllOngoing(from?: number): Promise<any> {
+  static async updateAllOngoing(
+    from?: number
+  ): Promise<{ episodesInserted: number; updatedAnimes: any }> {
     try {
+      let updatedAnimes = [];
       let episodesInserted = 0;
       let fakeIndex = from ? from : 1;
       const getAllOngoingAnimes = await Anime.find({ status: "Ongoing" });
@@ -293,6 +305,7 @@ class Jellyfish {
                 { new: true }
               );
               if (storin) {
+                updatedAnimes.push(storin);
                 colorize_success(
                   `[u0] [${fakeIndex}] [sub] [${ongoing.anilistId}] +${
                     latestEpisodes &&
@@ -331,6 +344,7 @@ class Jellyfish {
                 { new: true }
               );
               if (storin) {
+                updatedAnimes.push(storin);
                 colorize_success(
                   `[u0] [${fakeIndex}] [dub] [${ongoing.anilistId}] +${
                     latestEpisodes &&
@@ -391,9 +405,9 @@ class Jellyfish {
         fakeIndex++;
 
         // bypass rate-limit by waiting
-        await new Promise((resolve) => setTimeout(resolve, 2500));
+        await new Promise((resolve) => setTimeout(resolve, 2000));
       }
-      return episodesInserted;
+      return { episodesInserted, updatedAnimes };
     } catch (error) {
       throw new Error(`[u0] ${error}`);
     }
