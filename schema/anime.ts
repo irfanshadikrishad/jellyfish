@@ -16,8 +16,20 @@ const animeSchema = new Schema(
     description: String,
     poster: String,
     cover: String,
-    sub_episodes: [{}],
-    dub_episodes: [{}],
+    sub_episodes: [
+      {
+        id: { type: String, required: false },
+        title: { type: String, required: false },
+        number: { type: Number, required: false },
+      },
+    ],
+    dub_episodes: [
+      {
+        id: { type: String, required: false },
+        title: { type: String, required: false },
+        number: { type: Number, required: false },
+      },
+    ],
     origin: String,
     format: String,
     duration: String,
@@ -44,6 +56,15 @@ const animeSchema = new Schema(
     studios: [String],
     season: String,
     release_date: String,
+    isLicensed: { type: Boolean, required: false },
+    color: { type: String, required: false },
+    relations: [{}],
+    trailer: {
+      id: { type: String },
+      url: { type: String, required: false },
+      site: { type: String, required: false },
+      thumbnail: { type: String, required: false },
+    },
     recommendations: [String],
   },
   { timestamps: true }

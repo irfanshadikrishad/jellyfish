@@ -53,6 +53,10 @@ class Jellyfish {
           season,
           releaseDate,
           recommendations,
+          isLicensed,
+          color,
+          relations,
+          trailer,
         } = await anilist.fetchAnimeInfo(anilistId, false);
 
         // GET GOGOID > GOGO_EPISODES > GOGO_EPISODE_SOURCES
@@ -181,6 +185,11 @@ class Jellyfish {
           studios: studios,
           season: season,
           release_date: releaseDate,
+          recommendations: recommendations?.map(({ id }) => id),
+          isLicensed: isLicensed,
+          color: color,
+          relations: relations,
+          trailer: trailer ? trailer : [],
         });
 
         if (
@@ -207,7 +216,7 @@ class Jellyfish {
           }
         }
       } catch (error) {
-        colorize_error(`[${anilistId}] not found.`);
+        colorize_error(`[${anilistId}] not found. ${error}`);
       }
     } else {
       colorize_mark2(
