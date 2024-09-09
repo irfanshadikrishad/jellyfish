@@ -22,4 +22,26 @@ function getTitle(title: {
   }
 }
 
-export { getTitle };
+function getCurrentDateAndTime() {
+  const now = new Date();
+
+  const day = now.getDate().toString().padStart(2, "0");
+  const month = (now.getMonth() + 1).toString().padStart(2, "0");
+  const year = now.getFullYear();
+
+  let hours = now.getHours();
+  const minutes = now.getMinutes().toString().padStart(2, "0");
+
+  const ampm = hours >= 12 ? "PM" : "AM";
+  hours = hours % 12;
+  hours = hours ? hours : 12;
+  const formattedHours = hours.toString().padStart(2, "0");
+
+  return `${day}/${month}/${year} at ${formattedHours}:${minutes}${ampm}`;
+}
+
+function replaceMultipleHyphens(text: string) {
+  return text.replace(/-{2,}/g, "-");
+}
+
+export { getTitle, getCurrentDateAndTime, replaceMultipleHyphens };

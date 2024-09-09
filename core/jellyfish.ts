@@ -13,7 +13,7 @@ import {
   colorize_mark4,
   colorize_success,
 } from "../utils/colorize";
-import { replaceMultipleHyphens } from "../utils/workers";
+import { replaceMultipleHyphens } from "../utils/helpers";
 
 class Jellyfish {
   /**
