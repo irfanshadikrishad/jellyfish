@@ -20,6 +20,7 @@ const {
   getStats,
   remove_Zero,
   remove_nextAiringEpisode,
+  remove_Recommendations,
   updateAllDubs,
   distinct,
   updateSeason,
@@ -40,6 +41,7 @@ try {
     "--subId": String,
     "--dubId": String,
     "--distinct": Boolean,
+    "--rrec": Boolean,
     "--us": Boolean,
     "-f": Number,
   });
@@ -188,6 +190,17 @@ try {
     colorize_info(`[rair] deprecated`);
     // await database();
     // await remove_nextAiringEpisode()
+    //   .then((count) => {
+    //     colorize_mark2(`\n[rair] ${count} deleted`);
+    //   })
+    //   .catch((err) => {
+    //     colorize_error(`[rair] ${err}`);
+    //   });
+    // process.exit(0);
+  } else if (args["--rrec"]) {
+    colorize_info(`[rair] deprecated`);
+    // await database();
+    // await remove_Recommendations()
     //   .then((count) => {
     //     colorize_mark2(`\n[rair] ${count} deleted`);
     //   })

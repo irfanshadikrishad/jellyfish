@@ -161,6 +161,15 @@ class Jellyfish {
           colorize_error(`[dub] not-found.`);
         }
 
+        const resolvedRecommendations = await Promise.all(
+          (recommendations || []).map(async ({ id }) => {
+            const anime = await Anime.findOne({ anilistId: id });
+            if (anime?._id) {
+              return anime?._id;
+            }
+          })
+        );
+
         // SAVE ANIME DETAILS TO THE DATABASE
         const anime = new Anime({
           anilistId: id,
@@ -185,7 +194,7 @@ class Jellyfish {
           studios: studios,
           season: season,
           release_date: releaseDate,
-          recommendations: recommendations?.map(({ id }) => id),
+          recommendations: resolvedRecommendations.filter((id) => id !== null),
           isLicensed: isLicensed,
           color: color,
           relations: relations,
@@ -730,6 +739,24 @@ class Jellyfish {
       const { modifiedCount } = await Anime.updateMany(
         {},
         { $unset: { nextAiringEpisode: {} } }
+      );
+      if (modifiedCount) {
+        return modifiedCount;
+      } else {
+        return 0;
+      }
+    } catch (error) {
+      throw new Error(`${error}`);
+    }
+  }
+  /**
+   * Removes recommendations from all animes
+   */
+  static async remove_Recommendations(): Promise<any> {
+    try {
+      const { modifiedCount } = await Anime.updateMany(
+        {},
+        { $unset: { recommendations: [] } }
       );
       if (modifiedCount) {
         return modifiedCount;
