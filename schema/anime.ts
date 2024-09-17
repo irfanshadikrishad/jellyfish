@@ -65,7 +65,7 @@ const animeSchema = new Schema(
       site: { type: String, required: false },
       thumbnail: { type: String, required: false },
     },
-    recommendations: [String],
+    recommendations: [{ type: Schema.Types.ObjectId, ref: "ANIME" }],
   },
   { timestamps: true }
 );
