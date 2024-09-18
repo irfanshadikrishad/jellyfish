@@ -24,6 +24,7 @@ const {
   updateAllDubs,
   distinct,
   updateSeason,
+  refresh,
 } = Jellyfish;
 
 try {
@@ -42,6 +43,7 @@ try {
     "--dubId": String,
     "--distinct": Boolean,
     "--rrec": Boolean,
+    "--refresh": Boolean,
     "--us": Boolean,
     "-f": Number,
   });
@@ -237,6 +239,16 @@ try {
       })
       .catch((err) => {
         colorize_error(`[us] ${err}`);
+      });
+    process.exit(0);
+  } else if (args["--refresh"]) {
+    await database();
+    await refresh()
+      .then((count) => {
+        colorize_mark2(`\n${count} document(s) refreshed.`);
+      })
+      .catch((err) => {
+        colorize_error(String(err));
       });
     process.exit(0);
   } else {

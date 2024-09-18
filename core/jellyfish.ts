@@ -13,7 +13,11 @@ import {
   colorize_mark4,
   colorize_success,
 } from "../utils/colorize";
-import { replaceMultipleHyphens } from "../utils/helpers";
+import {
+  getGogoIDFromEpisodeId,
+  getTitle,
+  replaceMultipleHyphens,
+} from "../utils/helpers";
 
 class Jellyfish {
   /**
@@ -208,9 +212,9 @@ class Jellyfish {
           title !== null
         ) {
           colorize_mark4(
-            `[skip] [${title?.english ? title.english : title?.romaji}] [sub] ${
-              sub_episodes.length
-            } [dub] ${dub_episodes.length} `
+            `[skip] [${getTitle(title)}] [sub] ${sub_episodes.length} [dub] ${
+              dub_episodes.length
+            } `
           );
         } else if (sub_episodes.length === 0 && dub_episodes.length === 0) {
           colorize_error(
@@ -622,21 +626,15 @@ class Jellyfish {
    * To get the statistics from database
    * @returns total_anime
    * @returns status_ongoing
-   * @returns status_completed
-   * @returns status_hiatus
-   * @returns status_cancelled
-   * @returns status_notYetAired
-   * @returns status_unknown
    * @returns format_TV
    * @returns format_TV_Short
    * @returns format_Movie
    * @returns format_Special
    * @returns format_OVA
    * @returns format_ONA
-   * @returns format_Music
-   * @returns format_Manga
-   * @returns format_Novel
-   * @returns format_Oneshot
+   * @returns origin_japan
+   * @returns origin_southKorea
+   * @returns origin_china
    * @returns total_adult
    */
   static async getStats(): Promise<any> {
@@ -914,6 +912,45 @@ class Jellyfish {
     } catch (error) {
       throw new Error(`${error}`);
     }
+  }
+
+  /**
+   * Refresh documents
+   * @returns total refreshed document(s) count
+   */
+  static async refresh(): Promise<any> {
+    let totalRefreshed = 0;
+    const allAnimes = await Anime.find();
+    colorize_info(
+      `Initializing refresh...\n${allAnimes.length} anime(s) found.\n`
+    );
+    for (let anime of allAnimes) {
+      const documentID = anime?._id;
+      const anilistID: string = anime?.anilistId;
+      const gogoSubID: string = getGogoIDFromEpisodeId(
+        anime?.sub_episodes[0]?.id
+      );
+      const gogoDubID: string = getGogoIDFromEpisodeId(
+        anime?.dub_episodes[0]?.id
+      );
+
+      const deleted = await Anime.deleteOne({ _id: documentID });
+      if (deleted) {
+        const insertAgain = await Jellyfish.singleInsertById(
+          anilistID,
+          gogoSubID && gogoSubID,
+          gogoDubID && gogoDubID
+        );
+        if (insertAgain) {
+          totalRefreshed++;
+          colorize_mark2(
+            `[${totalRefreshed}] ${documentID} => ${insertAgain?._id}`
+          );
+        }
+      }
+    }
+
+    return totalRefreshed;
   }
 }
 
