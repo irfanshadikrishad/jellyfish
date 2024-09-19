@@ -3,20 +3,20 @@
  * @param title { english?: string; romaji?: string; native?: string; userPreffered?: string;}
  * @returns single title as string
  */
-function getTitle(title: {
+function getTitle(title?: {
   english?: string;
   romaji?: string;
   native?: string;
-  userPreffered?: string;
+  userPreferred?: string;
 }): string {
   if (title?.english) {
-    return title?.english;
+    return title.english;
   } else if (title?.romaji) {
-    return title?.romaji;
+    return title.romaji;
   } else if (title?.native) {
-    return title?.native;
-  } else if (title?.userPreffered) {
-    return title?.userPreffered;
+    return title.native;
+  } else if (title?.userPreferred) {
+    return title.userPreferred;
   } else {
     return "null";
   }
@@ -44,4 +44,18 @@ function replaceMultipleHyphens(text: string) {
   return text.replace(/-{2,}/g, "-");
 }
 
-export { getTitle, getCurrentDateAndTime, replaceMultipleHyphens };
+function getGogoIDFromEpisodeId(episodeID: string) {
+  if (!episodeID) {
+    return "";
+  } else {
+    let gogoID: string = episodeID.split("-episode-")[0];
+    return gogoID;
+  }
+}
+
+export {
+  getTitle,
+  getCurrentDateAndTime,
+  replaceMultipleHyphens,
+  getGogoIDFromEpisodeId,
+};
