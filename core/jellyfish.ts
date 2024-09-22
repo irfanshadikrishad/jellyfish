@@ -32,6 +32,12 @@ class Jellyfish {
   ): Promise<any> {
     const isAlreadyAdded = await Anime.findOne({ anilistId });
     if (anilistId && !isAlreadyAdded) {
+      // LOGS
+      fs.appendFile("logs.txt", `\nINITIATED ${anilistId}`, (err) => {
+        if (err) {
+          colorize_error(`[refresh] ${err}`);
+        }
+      });
       colorize_info(`[${anilistId}] initiated...`);
       try {
         const {
@@ -920,7 +926,7 @@ class Jellyfish {
    */
   static async refresh(): Promise<any> {
     let totalRefreshed = 0;
-    const allAnimes = await Anime.find();
+    const allAnimes = await Anime.find().sort({ createdAt: 1 });
     colorize_info(
       `Initializing refresh...\n${allAnimes.length} anime(s) found.\n`
     );
@@ -941,10 +947,30 @@ class Jellyfish {
           gogoSubID && gogoSubID,
           gogoDubID && gogoDubID
         );
-        if (insertAgain) {
+        // LOGS
+        fs.appendFile(
+          "logs.txt",
+          `\n${totalRefreshed} DELETED ${anilistID}`,
+          (err) => {
+            if (err) {
+              colorize_error(`[refresh] ${err}`);
+            }
+          }
+        );
+        if (insertAgain?._id) {
           totalRefreshed++;
           colorize_mark2(
             `[${totalRefreshed}] ${documentID} => ${insertAgain?._id}`
+          );
+          // LOGS
+          fs.appendFile(
+            "logs.txt",
+            `\n${totalRefreshed} Inserted ${anilistID}`,
+            (err) => {
+              if (err) {
+                colorize_error(`[refresh] ${err}`);
+              }
+            }
           );
         }
       }

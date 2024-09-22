@@ -1,7 +1,7 @@
 import { Jellyfish } from "../core/jellyfish";
 import database from "../database/database";
 import { colorize_info, colorize_mark2 } from "../utils/colorize";
-import { sendMail } from "../utils/workers";
+import { sendMail } from "../utils/helpers";
 import express from "express";
 
 const app = express();

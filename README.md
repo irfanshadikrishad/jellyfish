@@ -21,14 +21,15 @@ EMAIL_TO=(optional)
 
 #### Available Commands:
 
-| Commands                           | Usage                        |
-| ---------------------------------- | ---------------------------- |
-| `bun index.ts --i1 [anilistId]`    | Insert anime by anilistId.   |
-| `bun index.ts --iall [from_page]`  | Insert all animes.           |
-| `bun index.ts --r1 [anilistId]`    | Remove anime with anilistId. |
-| `bun index.ts --u0`                | Update all ongoing animes.   |
-| `bun index.ts --ud [anilistId]`    | Update dub by anilistId.     |
-| `bun index.ts --udall [from_page]` | Update all dubs.             |
-| `bun index.ts --stats`             | Server stats.                |
+| Commands                        | Usage                        |
+| ------------------------------- | ---------------------------- |
+| `bun index.ts --i1 [anilistId]` | Insert anime by anilistId.   |
+| `bun index.ts --iall`           | Insert all animes.           |
+| `bun index.ts --r1 [anilistId]` | Remove anime with anilistId. |
+| `bun index.ts --u0`             | Update all ongoing animes.   |
+| `bun index.ts --ud [anilistId]` | Update dub by anilistId.     |
+| `bun index.ts --udall`          | Update all dubs.             |
+| `bun index.ts --stats`          | Server stats.                |
+| `bun index.ts --help or -h`     | Shows available commands.    |
 
 _© Irfan Shadik Rishad_

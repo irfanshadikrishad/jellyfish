@@ -46,6 +46,8 @@ try {
     "--refresh": Boolean,
     "--us": Boolean,
     "-f": Number,
+    "--help": Boolean,
+    "-h": "--help",
   });
   if (args["--i1"]) {
     await database();
@@ -250,6 +252,9 @@ try {
       .catch((err) => {
         colorize_error(String(err));
       });
+    process.exit(0);
+  } else if (args["--help"] || args["-h"]) {
+    usage();
     process.exit(0);
   } else {
     usage();

@@ -21,6 +21,9 @@ function colorize_mark3(text: string) {
 function colorize_mark4(text: string) {
   console.log(chalk.black.bgHex("#7E4AB8 ")(text)); // Azela Purple
 }
+function colorize_mark5(text: string) {
+  console.log(chalk.black.bgRgb(170, 135, 92)(text)); // Azela Purple
+}
 
 export {
   colorize_info,
@@ -30,4 +33,5 @@ export {
   colorize_mark2,
   colorize_mark3,
   colorize_mark4,
+  colorize_mark5,
 };
