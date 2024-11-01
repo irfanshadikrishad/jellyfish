@@ -1,4 +1,4 @@
-import { Schema, model } from "mongoose";
+import { Schema, model } from "mongoose"
 
 const animeSchema = new Schema(
   {
@@ -67,9 +67,9 @@ const animeSchema = new Schema(
     },
     recommendations: [{ type: Schema.Types.ObjectId, ref: "ANIME" }],
   },
-  { timestamps: true }
-);
+  { timestamps: true },
+)
 
-const Anime = model("ANIME", animeSchema);
+const Anime = model("ANIME", animeSchema)
 
-export default Anime;
+export default Anime
