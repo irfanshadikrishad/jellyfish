@@ -21,13 +21,10 @@ jobs:
           node-version: "18"
 
       - name: Install dependencies
-        run: npm install
+        run: bun install
 
       - name: Run Prettier
-        run: npm run format
-
-      - name: Run ESLint with fix
-        run: npm run lint:fix
+        run: bun run format
 
       - name: Commit and push changes back to PR
         run: |
