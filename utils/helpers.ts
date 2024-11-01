@@ -1,9 +1,9 @@
-import { config } from "dotenv";
-import { colorize_error } from "./colorize";
-import nodemailer from "nodemailer";
+import { config } from "dotenv"
+import { colorize_error } from "./colorize"
+import nodemailer from "nodemailer"
 
-config({ path: "../.env" });
-const NODEMAILER = process.env.NODEMAILER;
+config({ path: "../.env" })
+const NODEMAILER = process.env.NODEMAILER
 
 async function sendMail(count: string, error?: string, updatedAnimes?: [any]) {
   var transporter = nodemailer.createTransport({
@@ -12,7 +12,7 @@ async function sendMail(count: string, error?: string, updatedAnimes?: [any]) {
       user: String(process.env.EMAIL_FROM),
       pass: String(NODEMAILER),
     },
-  });
+  })
 
   var mailOptions = {
     from: `Jellyfish <${String(process.env.EMAIL_FROM)}>`,
@@ -37,7 +37,7 @@ async function sendMail(count: string, error?: string, updatedAnimes?: [any]) {
               ({ title, anilistId }, idx) =>
                 `<a href="https://komachi-v2.vercel.app/watch/${anilistId}">${
                   idx + 1
-                }. ${getTitle(title)}</a>`
+                }. ${getTitle(title)}</a>`,
             )
             .join("<br>")
         : `[updatedAnimes] ${count} updated animes 😥`
@@ -45,15 +45,15 @@ async function sendMail(count: string, error?: string, updatedAnimes?: [any]) {
     <br><br>
     In the meantime, feel free to subscribe to my <a href='https://youtube.com/@irfanshadikrishad'>YouTube</a> channel.
   `,
-  };
+  }
 
   transporter.sendMail(mailOptions, function (error, info) {
     if (error) {
-      colorize_error(String(error));
+      colorize_error(String(error))
     } else {
-      console.log(info);
+      console.log(info)
     }
-  });
+  })
 }
 
 /**
@@ -62,26 +62,26 @@ async function sendMail(count: string, error?: string, updatedAnimes?: [any]) {
  * @returns single title as string
  */
 function getTitle(title?: {
-  english?: string;
-  romaji?: string;
-  native?: string;
-  userPreferred?: string;
+  english?: string
+  romaji?: string
+  native?: string
+  userPreferred?: string
 }): string {
   if (title?.english) {
-    return title.english;
+    return title.english
   } else if (title?.romaji) {
-    return title.romaji;
+    return title.romaji
   } else if (title?.native) {
-    return title.native;
+    return title.native
   } else if (title?.userPreferred) {
-    return title.userPreferred;
+    return title.userPreferred
   } else {
-    return "null";
+    return "null"
   }
 }
 
 function getCurrentDateAndTime() {
-  const now = new Date();
+  const now = new Date()
 
   const formatter = new Intl.DateTimeFormat("en-US", {
     timeZone: "Asia/Dhaka",
@@ -91,7 +91,7 @@ function getCurrentDateAndTime() {
     hour: "2-digit",
     minute: "2-digit",
     hour12: true,
-  });
+  })
   const [
     { value: month },
     ,
@@ -104,21 +104,21 @@ function getCurrentDateAndTime() {
     { value: minute },
     ,
     { value: period },
-  ] = formatter.formatToParts(now);
+  ] = formatter.formatToParts(now)
 
-  return `${day}/${month}/${year} at ${hour}:${minute}${period}`;
+  return `${day}/${month}/${year} at ${hour}:${minute}${period}`
 }
 
 function replaceMultipleHyphens(text: string) {
-  return text.replace(/-{2,}/g, "-");
+  return text.replace(/-{2,}/g, "-")
 }
 
 function getGogoIDFromEpisodeId(episodeID: string) {
   if (!episodeID) {
-    return "";
+    return ""
   } else {
-    let gogoID: string = episodeID.split("-episode-")[0];
-    return gogoID;
+    let gogoID: string = episodeID.split("-episode-")[0]
+    return gogoID
   }
 }
 
@@ -128,4 +128,4 @@ export {
   replaceMultipleHyphens,
   getGogoIDFromEpisodeId,
   sendMail,
-};
+}
