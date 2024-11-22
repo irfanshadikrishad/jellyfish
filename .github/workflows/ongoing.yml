@@ -11,4 +11,4 @@ jobs:
 
     steps:
       - name: Send GET request
-        run: curl -X GET "https://jellyfish-cvxo.onrender.com/update"
+        run: curl -X GET "https://jellyfish-x82p.onrender.com/update"
