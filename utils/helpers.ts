@@ -61,12 +61,17 @@ async function sendMail(count: string, error?: string, updatedAnimes?: [any]) {
  * @param title { english?: string; romaji?: string; native?: string; userPreffered?: string;}
  * @returns single title as string
  */
-function getTitle(title?: {
-  english?: string
-  romaji?: string
-  native?: string
-  userPreferred?: string
-}): string {
+function getTitle(
+  title?:
+    | {
+        english?: string | null | undefined
+        romaji?: string | null | undefined
+        native?: string | null | undefined
+        userPreferred?: string | null | undefined
+      }
+    | null
+    | undefined,
+): string {
   if (title?.english) {
     return title.english
   } else if (title?.romaji) {

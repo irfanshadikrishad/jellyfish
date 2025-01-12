@@ -924,7 +924,9 @@ class Jellyfish {
    */
   static async refresh(): Promise<any> {
     let totalRefreshed = 0
-    const allAnimes = await Anime.find().sort({ createdAt: 1 })
+    const allAnimes = await Anime.find({ status: "Completed" }).sort({
+      createdAt: -1,
+    })
     colorize_info(
       `Initializing refresh...\n${allAnimes.length} anime(s) found.\n`,
     )
@@ -937,40 +939,54 @@ class Jellyfish {
       const gogoDubID: string = getGogoIDFromEpisodeId(
         anime?.dub_episodes[0]?.id,
       )
-
-      const deleted = await Anime.deleteOne({ _id: documentID })
-      if (deleted) {
-        const insertAgain = await Jellyfish.singleInsertById(
-          anilistID,
-          gogoSubID && gogoSubID,
-          gogoDubID && gogoDubID,
-        )
-        // LOGS
-        fs.appendFile(
-          "logs.txt",
-          `\n${totalRefreshed} DELETED ${anilistID}`,
-          (err) => {
-            if (err) {
-              colorize_error(`[refresh] ${err}`)
+      try {
+        // Check if all animes are available
+        const gogoDetails = await gogoanime.fetchAnimeInfo(gogoSubID)
+        if (
+          gogoDetails.episodes?.length &&
+          gogoDetails.episodes?.length > anime.sub_episodes.length
+        ) {
+          const deleted = await Anime.deleteOne({ _id: documentID })
+          if (deleted) {
+            const insertAgain = await Jellyfish.singleInsertById(
+              anilistID,
+              gogoSubID && gogoSubID,
+              gogoDubID && gogoDubID,
+            )
+            // LOGS
+            fs.appendFile(
+              "logs.txt",
+              `\n${totalRefreshed} DELETED ${anilistID}`,
+              (err) => {
+                if (err) {
+                  colorize_error(`[refresh] ${err}`)
+                }
+              },
+            )
+            if (insertAgain?._id) {
+              totalRefreshed++
+              colorize_mark2(
+                `[${totalRefreshed}] ${documentID} => ${insertAgain?._id}`,
+              )
+              // LOGS
+              fs.appendFile(
+                "logs.txt",
+                `\n${totalRefreshed} Inserted ${anilistID}`,
+                (err) => {
+                  if (err) {
+                    colorize_error(`[refresh] ${err}`)
+                  }
+                },
+              )
             }
-          },
-        )
-        if (insertAgain?._id) {
-          totalRefreshed++
-          colorize_mark2(
-            `[${totalRefreshed}] ${documentID} => ${insertAgain?._id}`,
-          )
-          // LOGS
-          fs.appendFile(
-            "logs.txt",
-            `\n${totalRefreshed} Inserted ${anilistID}`,
-            (err) => {
-              if (err) {
-                colorize_error(`[refresh] ${err}`)
-              }
-            },
+          }
+        } else {
+          colorize_info(
+            `[${totalRefreshed}/${allAnimes.length}] [skip] ${getTitle(anime.title)} ${anime.sub_episodes.length}-${gogoDetails.episodes?.length}`,
           )
         }
+      } catch (error) {
+        console.error(`${(error as Error).message}`)
       }
     }
 
