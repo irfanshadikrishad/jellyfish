@@ -6,7 +6,7 @@
   "devDependencies": {
     "@types/bun": "^1.1.14",
     "@types/express": "^5.0.0",
-    "@types/nodemailer": "^6.4.17",
+    "@types/nodemailer": "^7.0.0",
     "bun": "^1.1.38",
     "prettier": "^3.4.2"
   },
@@ -17,11 +17,11 @@
     "@consumet/extensions": "^1.8.1",
     "arg": "^5.0.2",
     "chalk": "^5.3.0",
-    "dotenv": "^16.4.7",
-    "express": "^4.21.2",
+    "dotenv": "^17.2.1",
+    "express": "^5.1.0",
     "mongoose": "^8.8.4",
     "node-fetch": "^3.3.2",
-    "nodemailer": "^6.9.16"
+    "nodemailer": "^7.0.5"
   },
   "scripts": {
     "update": "bun run update/index.ts",
